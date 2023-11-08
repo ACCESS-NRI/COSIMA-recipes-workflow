@@ -114,6 +114,7 @@ def generate_actions():
     for key, val in dir_recipes.items():
         for recipe in Path(val).rglob('*.ipynb'):
             filename = f'{recipe.stem}.yml'
+            filename = filename.replace(" ", "_")
             if recipe.stem in exclude:
                 continue
             content = template.render(

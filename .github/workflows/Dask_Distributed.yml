@@ -1,6 +1,6 @@
 
 
-name: Run Ice Diagnostics 
+name: Run Dask Distributed 
  
 on:
   workflow_run:
@@ -21,12 +21,12 @@ jobs:
             const runs = await github.rest.actions.listWorkflowRuns({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: 'Ice Diagnostics.yml',
+              workflow_id: 'Dask Distributed.yml',
               per_page: 2
             })
             return runs.data.workflow_runs[1].conclusion
           result-encoding: string
-      - name: Run Ice Diagnostics
+      - name: Run Dask Distributed
         if: ${{ github.event.workflow_run.name == 'Run all recipes' || ( github.event.workflow_run.name == 'Run all failed' && steps.latest-workflow-status.outputs.result != 'success' ) || github.event_name == 'workflow_dispatch' }}
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -35,8 +35,8 @@ jobs:
           key: ${{secrets.DEPLOY_KEY}}
           command_timeout: 2400m
           script: |
-            cd ${{secrets.GADI_SCRIPTS_DIR}}/../ESMValTool/jobs
-            qsub launch_Ice Diagnostics.pbs
+            cd ${{secrets.GADI_SCRIPTS_DIR}}/../COSIMA-recipes/jobs
+            qsub launch_Dask Distributed.pbs
       - name: Get output log
         if: ${{ failure() || github.event.workflow_run.name == 'Run all recipes' || ( github.event.workflow_run.name == 'Run all failed' && steps.latest-workflow-status.outputs.result != 'success' ) || github.event_name == 'workflow_dispatch' }}
         uses: nicklasfrahm/scp-action@main
@@ -46,7 +46,7 @@ jobs:
           username: ${{secrets.GADI_USER}}
           insecure_ignore_fingerprint: true
           key: ${{secrets.DEPLOY_KEY}}
-          source: ${{secrets.GADI_SCRIPTS_DIR}}/../ESMValTool/logs/Ice Diagnostics.out
+          source: ${{secrets.GADI_SCRIPTS_DIR}}/../COSIMA-recipes/logs/Dask Distributed.out
           target: log.txt
       - name: Upload log as artifact
         if: ${{ failure() || github.event.workflow_run.name == 'Run all recipes' || ( github.event.workflow_run.name == 'Run all failed' && steps.latest-workflow-status.outputs.result != 'success' ) || github.event_name == 'workflow_dispatch' }}
@@ -59,19 +59,19 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          github_id=$(gh api --header "Accept: application/vnd.github+json" --header 'X-GitHub-Api-Version:2022-11-28' --method GET /repos/ACCESS-NRI/ESMValTool-workflow/issues?state=open | jq '.[] | select(.title == "Recipe: Ice Diagnostics failing") | .number')
+          github_id=$(gh api --header "Accept: application/vnd.github+json" --header 'X-GitHub-Api-Version:2022-11-28' --method GET /repos/ACCESS-NRI/COSIMA-recipes-workflow/issues?state=open | jq '.[] | select(.title == "Recipe: Dask Distributed failing") | .number')
           if [ -z "$github_id" ]
           then
-            gh api --header "Accept: application/vnd.github+json" --header 'X-GitHub-Api-Version:2022-11-28' --method POST /repos/ACCESS-NRI/ESMValTool-workflow/issues -f title="Recipe: Ice Diagnostics failing" -f body="Please check log in action workflow"
+            gh api --header "Accept: application/vnd.github+json" --header 'X-GitHub-Api-Version:2022-11-28' --method POST /repos/ACCESS-NRI/COSIMA-recipes-workflow/issues -f title="Recipe: Dask Distributed failing" -f body="Please check log in action workflow"
           #else
-          #  gh api --method POST -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /repos/ACCESS-NRI/ESMValTool-workflow/issues/$github_id/comments -f body="Still failing"
+          #  gh api --method POST -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /repos/ACCESS-NRI/COSIMA-recipes-workflow/issues/$github_id/comments -f body="Still failing"
           fi
       - name: Close Issue if success
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          github_id=$(gh api --header "Accept: application/vnd.github+json" --header 'X-GitHub-Api-Version:2022-11-28' --method GET /repos/ACCESS-NRI/ESMValTool-workflow/issues?state=open | jq '.[] | select(.title == "Recipe: Ice Diagnostics failing") | .number')
+          github_id=$(gh api --header "Accept: application/vnd.github+json" --header 'X-GitHub-Api-Version:2022-11-28' --method GET /repos/ACCESS-NRI/COSIMA-recipes-workflow/issues?state=open | jq '.[] | select(.title == "Recipe: Dask Distributed failing") | .number')
           if [ ! -z "$github_id" ]
           then
-            gh issue close --repo ACCESS-NRI/ESMValTool-workflow $github_id
+            gh issue close --repo ACCESS-NRI/COSIMA-recipes-workflow $github_id
           fi          
