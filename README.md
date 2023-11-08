@@ -19,9 +19,9 @@ ACCESS-NRI maintenance of COSIMA-recipes for the Australian Community.
 |----------|:-------------| 
 | Cross-slope_section_potrho_cc | [![Cross-slope_section_potrho_cc](https://github.com/ACCESS-NRI/COSIMA-recipes-workflow/actions/workflows/Cross-slope_section_potrho_cc.yml/badge.svg)](https://github.com/ACCESS-NRI/COSIMA-recipes-workflow/actions/workflows/Cross-slope_section_potrho_cc.yml) | 
 | Hovmoller_Temperature_Depth | [![Hovmoller_Temperature_Depth](https://github.com/ACCESS-NRI/COSIMA-recipes-workflow/actions/workflows/Hovmoller_Temperature_Depth.yml/badge.svg)](https://github.com/ACCESS-NRI/COSIMA-recipes-workflow/actions/workflows/Hovmoller_Temperature_Depth.yml) | 
-| Global Ocean Volumetric Temperature and Salinity Change | [![Global Ocean Volumetric Temperature and Salinity Change](https://github.com/ACCESS-NRI/COSIMA-recipes-workflow/actions/workflows/Global Ocean Volumetric Temperature and Salinity Change.yml/badge.svg)](https://github.com/ACCESS-NRI/COSIMA-recipes-workflow/actions/workflows/Global Ocean Volumetric Temperature and Salinity Change.yml) | 
-| Ice Diagnostics | [![Ice Diagnostics](https://github.com/ACCESS-NRI/COSIMA-recipes-workflow/actions/workflows/Ice Diagnostics.yml/badge.svg)](https://github.com/ACCESS-NRI/COSIMA-recipes-workflow/actions/workflows/Ice Diagnostics.yml) | 
-| Dask Distributed | [![Dask Distributed](https://github.com/ACCESS-NRI/COSIMA-recipes-workflow/actions/workflows/Dask Distributed.yml/badge.svg)](https://github.com/ACCESS-NRI/COSIMA-recipes-workflow/actions/workflows/Dask Distributed.yml) |
+| GlobalOceanVolumetricTemperatureandSalinityChange | [![GlobalOceanVolumetricTemperatureandSalinityChange](https://github.com/ACCESS-NRI/COSIMA-recipes-workflow/actions/workflows/GlobalOceanVolumetricTemperatureandSalinityChange.yml/badge.svg)](https://github.com/ACCESS-NRI/COSIMA-recipes-workflow/actions/workflows/GlobalOceanVolumetricTemperatureandSalinityChange.yml) | 
+| IceDiagnostics | [![IceDiagnostics](https://github.com/ACCESS-NRI/COSIMA-recipes-workflow/actions/workflows/IceDiagnostics.yml/badge.svg)](https://github.com/ACCESS-NRI/COSIMA-recipes-workflow/actions/workflows/IceDiagnostics.yml) | 
+| DaskDistributed | [![DaskDistributed](https://github.com/ACCESS-NRI/COSIMA-recipes-workflow/actions/workflows/DaskDistributed.yml/badge.svg)](https://github.com/ACCESS-NRI/COSIMA-recipes-workflow/actions/workflows/DaskDistributed.yml) |
 
 ## Documented Examples
 
