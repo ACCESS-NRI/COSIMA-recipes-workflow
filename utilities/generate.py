@@ -143,7 +143,7 @@ def generate_readme():
         for recipe in Path(val).rglob('*.ipynb'):
             if recipe.stem in exclude:
                 continue
-            kwargs[key].append(recipe.stem.replace(" ", ""))
+            kwargs[key].append(recipe.stem.replace(" ", "_"))
 
     content = template.render(**kwargs)
 
