@@ -33,6 +33,7 @@ jobs:
           host: gadi.nci.org.au
           username: ${% raw %}{{secrets.GADI_USER}}{% endraw %}
           key: ${% raw %}{{secrets.DEPLOY_KEY}}{% endraw %}
+          passphrase: ${% raw %}{{secrets.DEPLOY_KEY_PASSWORD}}{% endraw %}
           command_timeout: 2400m
           script: |
             cd ${% raw %}{{secrets.GADI_SCRIPTS_DIR}}{% endraw %}/../COSIMA-recipes/jobs
@@ -46,6 +47,7 @@ jobs:
           username: ${% raw %}{{secrets.GADI_USER}}{% endraw %}
           insecure_ignore_fingerprint: true
           key: ${% raw %}{{secrets.DEPLOY_KEY}}{% endraw %}
+          passphrase: ${% raw %}{{secrets.DEPLOY_KEY_PASSWORD}}{% endraw %}
           source: ${% raw %}{{secrets.GADI_SCRIPTS_DIR}}{% endraw %}/../COSIMA-recipes/logs/{{ recipe }}.out
           target: log.txt
       - name: Upload log as artifact

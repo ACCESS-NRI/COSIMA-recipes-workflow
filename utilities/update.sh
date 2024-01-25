@@ -4,6 +4,6 @@ if [ ! -d "cosima-recipes" ]
 then
   git clone git@github.com:ACCESS-NRI/cosima-recipes.git
 fi
-rm ../.github/workflows/recipe*.yml
+rm ../.github/workflows/*.yml
 python generate.py
 

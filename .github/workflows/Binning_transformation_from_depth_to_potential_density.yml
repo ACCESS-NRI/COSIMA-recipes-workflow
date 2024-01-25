@@ -33,6 +33,7 @@ jobs:
           host: gadi.nci.org.au
           username: ${{secrets.GADI_USER}}
           key: ${{secrets.DEPLOY_KEY}}
+          passphrase: ${{secrets.DEPLOY_KEY_PASSWORD}}
           command_timeout: 2400m
           script: |
             cd ${{secrets.GADI_SCRIPTS_DIR}}/../COSIMA-recipes/jobs
@@ -46,6 +47,7 @@ jobs:
           username: ${{secrets.GADI_USER}}
           insecure_ignore_fingerprint: true
           key: ${{secrets.DEPLOY_KEY}}
+          passphrase: ${{secrets.DEPLOY_KEY_PASSWORD}}
           source: ${{secrets.GADI_SCRIPTS_DIR}}/../COSIMA-recipes/logs/Binning_transformation_from_depth_to_potential_density.out
           target: log.txt
       - name: Upload log as artifact

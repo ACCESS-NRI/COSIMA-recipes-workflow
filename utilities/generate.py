@@ -12,7 +12,7 @@ dir_recipes = {"access_om2": Path('./cosima-recipes/ACCESS-OM2-GMD-Paper-Figs'),
                "tutorials": Path('./cosima-recipes/Tutorials')}
 
 # Name of the conda environment
-env = 'conda/access-med'
+env = 'conda/analysis3-23.10'
 # Mail notifications when a submitted job fails or finishes
 mail = False
 submit = False
@@ -31,11 +31,6 @@ walltime = '04:00:00'
 # List of recipes that require non-default SLURM options set above
 SPECIAL_RECIPES = {}
 
-# These recipes either use CMIP3 input data
-# and recipes where tasks require the full compute node memory.
-ONE_TASK_RECIPES = []
-
-    
 # Fill the list with the names of the recipes to be excluded
 exclude = []
 
@@ -95,12 +90,10 @@ def generate_submit():
                 file.write('module purge \n')
                 file.write('module load pbs \n')
                 file.write('\n')
-                file.write('module use /g/data/xp65/public/modules\n')
+                file.write('module use /g/data/hh5/public/modules\n')
                 file.write(f'module load {env}\n')
                 file.write('\n')
-                file.write(f'run ../{str(recipe)}')
-                if recipe.stem in ONE_TASK_RECIPES:
-                    file.write(' --max_parallel_tasks=1')
+                file.write(f'jupyter nbconvert --ExecutePreprocessor.kernel_name=python3 --to notebook --execute ../{str(recipe)}')
 
             if submit:
                 subprocess.check_call(['qsub', filename])
