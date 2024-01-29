@@ -1,9 +1,10 @@
 
 
 name: Generic 
- 
+run-name: Run ${{ inputs.recipe-name }}
+
 on:
-  workflow_call:
+  workflow_dispatch, workflow_call:
     inputs:
       recipe-name:
         required: true
