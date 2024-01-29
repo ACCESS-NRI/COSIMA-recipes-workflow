@@ -56,24 +56,24 @@ jobs:
         with:
           name: output_log
           path: log.txt
-      - name: Create Issue if fails
-        if: ${{ failure() }}
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          github_id=$(gh api --header "Accept: application/vnd.github+json" --header 'X-GitHub-Api-Version:2022-11-28' --method GET /repos/ACCESS-NRI/COSIMA-recipes-workflow/issues?state=open | jq '.[] | select(.title == "Recipe: Hovmoller_Temperature_Depth failing") | .number')
-          if [ -z "$github_id" ]
-          then
-            gh api --header "Accept: application/vnd.github+json" --header 'X-GitHub-Api-Version:2022-11-28' --method POST /repos/ACCESS-NRI/COSIMA-recipes-workflow/issues -f title="Recipe: Hovmoller_Temperature_Depth failing" -f body="Please check log in action workflow"
-          #else
-          #  gh api --method POST -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /repos/ACCESS-NRI/COSIMA-recipes-workflow/issues/$github_id/comments -f body="Still failing"
-          fi
-      - name: Close Issue if success
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          github_id=$(gh api --header "Accept: application/vnd.github+json" --header 'X-GitHub-Api-Version:2022-11-28' --method GET /repos/ACCESS-NRI/COSIMA-recipes-workflow/issues?state=open | jq '.[] | select(.title == "Recipe: Hovmoller_Temperature_Depth failing") | .number')
-          if [ ! -z "$github_id" ]
-          then
-            gh issue close --repo ACCESS-NRI/COSIMA-recipes-workflow $github_id
-          fi          
+      #- name: Create Issue if fails
+      #  if: ${{ failure() }}
+      #  env:
+      #    GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      #  run: |
+      #    github_id=$(gh api --header "Accept: application/vnd.github+json" --header 'X-GitHub-Api-Version:2022-11-28' --method GET /repos/ACCESS-NRI/COSIMA-recipes-workflow/issues?state=open | jq '.[] | select(.title == "Recipe: Hovmoller_Temperature_Depth failing") | .number')
+      #    if [ -z "$github_id" ]
+      #    then
+      #      gh api --header "Accept: application/vnd.github+json" --header 'X-GitHub-Api-Version:2022-11-28' --method POST /repos/ACCESS-NRI/COSIMA-recipes-workflow/issues -f title="Recipe: Hovmoller_Temperature_Depth failing" -f body="Please check log in action workflow"
+      #    #else
+      #    #  gh api --method POST -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /repos/ACCESS-NRI/COSIMA-recipes-workflow/issues/$github_id/comments -f body="Still failing"
+      #    fi
+      #- name: Close Issue if success
+      #  env:
+      #    GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      #  run: |
+      #    github_id=$(gh api --header "Accept: application/vnd.github+json" --header 'X-GitHub-Api-Version:2022-11-28' --method GET /repos/ACCESS-NRI/COSIMA-recipes-workflow/issues?state=open | jq '.[] | select(.title == "Recipe: Hovmoller_Temperature_Depth failing") | .number')
+      #    if [ ! -z "$github_id" ]
+      #    then
+      #      gh issue close --repo ACCESS-NRI/COSIMA-recipes-workflow $github_id
+      #    fi          
