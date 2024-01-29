@@ -1,6 +1,6 @@
 
 
-name: COSIM-CI 
+name: COSIMA-CI 
  
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ on:
 jobs:
   
   
-  run_age_at_the_bottom:
+  run_Figs14-20-23-24-PlotWOCETransects.yml:
     name: Figs14-20-23-24-PlotWOCETransects.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -16,7 +16,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Fig4-DrakePassageTransport.yml:
     name: Fig4-DrakePassageTransport.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -24,7 +24,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Fig12-ZonalTempSaltBias.yml:
     name: Fig12-ZonalTempSaltBias.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -32,7 +32,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Fig3-GlobalTimeseries.yml:
     name: Fig3-GlobalTimeseries.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -40,7 +40,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Hovmoller_Temperature_Depth.yml:
     name: Hovmoller_Temperature_Depth.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -48,7 +48,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Dask_Distributed.yml:
     name: Dask_Distributed.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -56,7 +56,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Ice_Diagnostics.yml:
     name: Ice_Diagnostics.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -64,7 +64,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Global_Ocean_Volumetric_Temperature_and_Salinity_Change.yml:
     name: Global_Ocean_Volumetric_Temperature_and_Salinity_Change.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -72,7 +72,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Cross-slope_section_potrho_cc.yml:
     name: Cross-slope_section_potrho_cc.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -80,7 +80,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Barotropic_Streamfunction_model_agnostic.yml:
     name: Barotropic_Streamfunction_model_agnostic.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -88,7 +88,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Querying_Scalar_Quantities_and_Annually_Averaged_Timeseries.yml:
     name: Querying_Scalar_Quantities_and_Annually_Averaged_Timeseries.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -96,7 +96,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Transport_Through_Straits.yml:
     name: Transport_Through_Straits.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -104,7 +104,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Cross-slope_section.yml:
     name: Cross-slope_section.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -112,7 +112,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Age_at_the_Bottom.yml:
     name: Age_at_the_Bottom.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -120,7 +120,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Surface_Water_Mass_Transformation.yml:
     name: Surface_Water_Mass_Transformation.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -128,7 +128,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Geostrophic_Velocities_from_Sea_Level.yml:
     name: Geostrophic_Velocities_from_Sea_Level.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -136,7 +136,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Binning_transformation_from_depth_to_potential_density.yml:
     name: Binning_transformation_from_depth_to_potential_density.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -144,7 +144,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Equatorial_thermal_and_zonal_velocity_structure.yml:
     name: Equatorial_thermal_and_zonal_velocity_structure.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -152,7 +152,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_TemperatureSalinityDiagrams_mom5_mom6.yml:
     name: TemperatureSalinityDiagrams_mom5_mom6.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -160,7 +160,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Decomposing_kinetic_energy_into_mean_and_transient.yml:
     name: Decomposing_kinetic_energy_into_mean_and_transient.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -168,7 +168,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_NearestNeighbourDistance.yml:
     name: NearestNeighbourDistance.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -176,7 +176,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Model_Resolution_Comparison.yml:
     name: Model_Resolution_Comparison.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -184,7 +184,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Particle_tracking_with_Parcels.yml:
     name: Particle_tracking_with_Parcels.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -192,7 +192,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_SeaIceSeasonality_DFA.yml:
     name: SeaIceSeasonality_DFA.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -200,7 +200,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_True_Zonal_Mean.yml:
     name: True_Zonal_Mean.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -208,7 +208,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Regridding.yml:
     name: Regridding.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -216,7 +216,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Bathymetry.yml:
     name: Bathymetry.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -224,7 +224,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_RelativeVorticity.yml:
     name: RelativeVorticity.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -232,7 +232,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Cross-contour_transport.yml:
     name: Cross-contour_transport.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -240,7 +240,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Compare_SSH_model_obs.yml:
     name: Compare_SSH_model_obs.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -248,7 +248,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Compare_SST_SSS_TemperatureSalinity_to_WOA13.yml:
     name: Compare_SST_SSS_TemperatureSalinity_to_WOA13.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -256,7 +256,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Zonally_Averaged_Global_Meridional_Overturning_Circulation.yml:
     name: Zonally_Averaged_Global_Meridional_Overturning_Circulation.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -264,7 +264,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Meridional_heat_transport.yml:
     name: Meridional_heat_transport.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -272,7 +272,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Atlantic_IndoPacific_Basin_Overturning_Circulation.yml:
     name: Atlantic_IndoPacific_Basin_Overturning_Circulation.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -280,7 +280,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_SeaIce_Plot_Example.yml:
     name: SeaIce_Plot_Example.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -288,7 +288,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Using_Explorer_tools.yml:
     name: Using_Explorer_tools.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -296,7 +296,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_COSIMA_CookBook_Tutorial.yml:
     name: COSIMA_CookBook_Tutorial.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -304,7 +304,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Model_Agnostic_Analysis.yml:
     name: Model_Agnostic_Analysis.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -312,7 +312,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Making_Maps_with_Cartopy.yml:
     name: Making_Maps_with_Cartopy.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -320,7 +320,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Make_Your_Own_Database.yml:
     name: Make_Your_Own_Database.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -328,7 +328,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Spatial_selection.yml:
     name: Spatial_selection.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -336,7 +336,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Template_For_Notebooks.yml:
     name: Template_For_Notebooks.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
@@ -344,7 +344,7 @@ jobs:
     secrets: inherit
 
   
-  run_age_at_the_bottom:
+  run_Submitting_analysis_jobs_to_gadi.yml:
     name: Submitting_analysis_jobs_to_gadi.yml
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
