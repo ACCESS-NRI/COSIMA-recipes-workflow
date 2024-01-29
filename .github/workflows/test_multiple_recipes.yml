@@ -1,0 +1,22 @@
+
+
+name: COSIMA-CI
+ 
+on:
+  workflow_dispatch:
+
+jobs:
+
+  run_age_at_the_bottom:
+    name: Age at the Bottom
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Age_at_the_Bottom
+    secrets: inherit
+  
+  run_bathymetry:
+    name: Bathymetry
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Bathymetry
+    secrets: inherit
