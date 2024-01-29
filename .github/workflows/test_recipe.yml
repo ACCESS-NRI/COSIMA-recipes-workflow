@@ -6,7 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  run_recipe:
+  call_generic:
     uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
     with:
       recipe-name: Age_at_the_Bottom
+    secrets: inherit
