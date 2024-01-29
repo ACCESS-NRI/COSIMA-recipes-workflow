@@ -1,0 +1,354 @@
+
+
+name: COSIM-CI 
+ 
+on:
+  workflow_dispatch:
+
+jobs:
+  
+  
+  run_age_at_the_bottom:
+    name: Figs14-20-23-24-PlotWOCETransects.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Figs14-20-23-24-PlotWOCETransects.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Fig4-DrakePassageTransport.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Fig4-DrakePassageTransport.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Fig12-ZonalTempSaltBias.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Fig12-ZonalTempSaltBias.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Fig3-GlobalTimeseries.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Fig3-GlobalTimeseries.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Hovmoller_Temperature_Depth.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Hovmoller_Temperature_Depth.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Dask_Distributed.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Dask_Distributed.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Ice_Diagnostics.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Ice_Diagnostics.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Global_Ocean_Volumetric_Temperature_and_Salinity_Change.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Global_Ocean_Volumetric_Temperature_and_Salinity_Change.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Cross-slope_section_potrho_cc.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Cross-slope_section_potrho_cc.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Barotropic_Streamfunction_model_agnostic.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Barotropic_Streamfunction_model_agnostic.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Querying_Scalar_Quantities_and_Annually_Averaged_Timeseries.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Querying_Scalar_Quantities_and_Annually_Averaged_Timeseries.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Transport_Through_Straits.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Transport_Through_Straits.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Cross-slope_section.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Cross-slope_section.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Age_at_the_Bottom.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Age_at_the_Bottom.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Surface_Water_Mass_Transformation.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Surface_Water_Mass_Transformation.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Geostrophic_Velocities_from_Sea_Level.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Geostrophic_Velocities_from_Sea_Level.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Binning_transformation_from_depth_to_potential_density.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Binning_transformation_from_depth_to_potential_density.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Equatorial_thermal_and_zonal_velocity_structure.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Equatorial_thermal_and_zonal_velocity_structure.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: TemperatureSalinityDiagrams_mom5_mom6.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: TemperatureSalinityDiagrams_mom5_mom6.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Decomposing_kinetic_energy_into_mean_and_transient.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Decomposing_kinetic_energy_into_mean_and_transient.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: NearestNeighbourDistance.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: NearestNeighbourDistance.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Model_Resolution_Comparison.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Model_Resolution_Comparison.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Particle_tracking_with_Parcels.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Particle_tracking_with_Parcels.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: SeaIceSeasonality_DFA.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: SeaIceSeasonality_DFA.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: True_Zonal_Mean.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: True_Zonal_Mean.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Regridding.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Regridding.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Bathymetry.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Bathymetry.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: RelativeVorticity.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: RelativeVorticity.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Cross-contour_transport.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Cross-contour_transport.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Compare_SSH_model_obs.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Compare_SSH_model_obs.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Compare_SST_SSS_TemperatureSalinity_to_WOA13.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Compare_SST_SSS_TemperatureSalinity_to_WOA13.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Zonally_Averaged_Global_Meridional_Overturning_Circulation.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Zonally_Averaged_Global_Meridional_Overturning_Circulation.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Meridional_heat_transport.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Meridional_heat_transport.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Atlantic_IndoPacific_Basin_Overturning_Circulation.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Atlantic_IndoPacific_Basin_Overturning_Circulation.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: SeaIce_Plot_Example.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: SeaIce_Plot_Example.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Using_Explorer_tools.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Using_Explorer_tools.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: COSIMA_CookBook_Tutorial.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: COSIMA_CookBook_Tutorial.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Model_Agnostic_Analysis.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Model_Agnostic_Analysis.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Making_Maps_with_Cartopy.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Making_Maps_with_Cartopy.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Make_Your_Own_Database.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Make_Your_Own_Database.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Spatial_selection.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Spatial_selection.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Template_For_Notebooks.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Template_For_Notebooks.yml
+    secrets: inherit
+
+  
+  run_age_at_the_bottom:
+    name: Submitting_analysis_jobs_to_gadi.yml
+    uses: ACCESS-NRI/COSIMA-recipes-workflow/.github/workflows/run_recipe.yml@main
+    with:
+      recipe-name: Submitting_analysis_jobs_to_gadi.yml
+    secrets: inherit
+
+  
