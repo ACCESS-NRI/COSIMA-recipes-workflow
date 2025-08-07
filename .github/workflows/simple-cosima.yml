@@ -43,7 +43,7 @@ jobs:
           path: ${{ steps.cosima.outputs.pbs_filename }}
           
       - name: Submit to GADI
-        uses: ACCESS-NRI/ssh-action@v1
+        uses: appleboy/ssh-action@v0.1.10
         with:
           host: 'gadi.nci.org.au'
           username: ${{ secrets.GADI_USERNAME }}
