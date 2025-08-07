@@ -23,34 +23,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         
-      # Debug: Check if the action repository is accessible
-      - name: Debug - Check action repository
-        run: |
-          echo "Checking if rbeucher/smart-notebook-runner is accessible..."
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://api.github.com/repos/rbeucher/smart-notebook-runner)
-          echo "HTTP Code: $HTTP_CODE"
-          if [ "$HTTP_CODE" = "200" ]; then
-            echo "✅ Repository exists and is accessible"
-            curl -s https://api.github.com/repos/rbeucher/smart-notebook-runner | jq -r '{"name": .name, "private": .private, "default_branch": .default_branch}'
-            
-            # Check if main branch exists and has action.yml
-            echo "Checking main branch and action.yml..."
-            curl -s https://api.github.com/repos/rbeucher/smart-notebook-runner/contents/action.yml?ref=main | jq -r '.name // "❌ action.yml not found"'
-            
-            # Check available refs
-            echo "Available branches/tags:"
-            curl -s https://api.github.com/repos/rbeucher/smart-notebook-runner/git/refs | jq -r '.[] | select(.ref | contains("heads") or contains("tags")) | .ref'
-            
-          elif [ "$HTTP_CODE" = "404" ]; then
-            echo "❌ Repository not found (404)"
-          elif [ "$HTTP_CODE" = "403" ]; then
-            echo "❌ Repository access forbidden (403) - might be private"
-          else
-            echo "❌ Unexpected error (HTTP $HTTP_CODE)"
-          fi
-        
       - name: Test COSIMA Appetisers
-        uses: rbeucher/smart-notebook-runner@main
+        uses: rbeucher/smart-recipe-runner@main
         with:
           mode: 'notebook'
           repository_url: 'https://github.com/COSIMA/cosima-recipes'
@@ -101,14 +75,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         
-      # Debug: Verify action accessibility
-      - name: Debug - Verify action repository
-        run: |
-          echo "Checking rbeucher/smart-notebook-runner repository..."
-          curl -s https://api.github.com/repos/rbeucher/smart-notebook-runner | jq -r '.full_name, .private'
-        
       - name: Test Notebooks
-        uses: rbeucher/smart-notebook-runner@main
+        uses: rbeucher/smart-recipe-runner@main
         with:
           mode: 'notebook'
           repository_url: ${{ matrix.repository.repo_url }}
@@ -127,7 +95,7 @@ jobs:
         uses: actions/checkout@v4
         
       - name: Validate Notebook Structure
-        uses: rbeucher/smart-notebook-runner@main
+        uses: rbeucher/smart-recipe-runner@main
         with:
           mode: 'notebook'
           repository_url: 'https://github.com/COSIMA/cosima-recipes'
@@ -150,7 +118,7 @@ jobs:
           sudo apt-get install -y htop iotop
           
       - name: Test with monitoring
-        uses: rbeucher/smart-notebook-runner@main
+        uses: rbeucher/smart-recipe-runner@main
         with:
           mode: 'notebook'
           repository_url: 'https://github.com/COSIMA/cosima-recipes'
@@ -182,7 +150,7 @@ jobs:
         uses: actions/checkout@v4
         
       - name: Test with error continuation
-        uses: rbeucher/smart-notebook-runner@main
+        uses: rbeucher/smart-recipe-runner@main
         with:
           mode: 'notebook'
           repository_url: 'https://github.com/COSIMA/cosima-recipes'
