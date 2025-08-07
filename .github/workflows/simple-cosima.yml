@@ -1,0 +1,53 @@
+name: Simple COSIMA Recipe
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  cosima-recipe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Generate PBS Script for COSIMA Ocean Analysis
+        id: cosima
+        uses: rbeucher/smart-recipe-runner@main
+        with:
+          recipe_type: 'cosima'
+          recipe_name: 'sea_surface_temperature_trends'
+          repository_url: 'https://github.com/COSIMA/cosima-recipes'
+          config: |
+            {
+              "queue": "normal",
+              "memory": "16gb",
+              "walltime": "02:00:00"
+            }
+      
+      - name: Show Results
+        run: |
+          echo "✅ COSIMA PBS script generated successfully"
+          echo "Script: ${{ steps.cosima.outputs.pbs_filename }}"
+          echo "Status: ${{ steps.cosima.outputs.status }}"
+          
+          echo ""
+          echo "--- Generated PBS Script ---"
+          cat ${{ steps.cosima.outputs.pbs_filename }}
+          
+      - name: Save PBS Script
+        uses: actions/upload-artifact@v4
+        with:
+          name: cosima-sea-surface-temp-pbs
+          path: ${{ steps.cosima.outputs.pbs_filename }}
+          
+      - name: Submit to GADI
+        uses: ACCESS-NRI/ssh-action@v1
+        with:
+          host: 'gadi.nci.org.au'
+          username: ${{ secrets.GADI_USERNAME }}
+          key: ${{ secrets.GADI_SSH_KEY }}        # Encrypted SSH key
+          passphrase: ${{ secrets.GADI_PASSPHRASE }}  # Key passphrase
+          script: |
+            qsub ${{ steps.cosima.outputs.pbs_filename }}
