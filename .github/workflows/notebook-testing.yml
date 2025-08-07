@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
         
       - name: Test COSIMA Appetisers
-        uses: rbeucher/smart-notebook-runner
+        uses: rbeucher/smart-notebook-runner@main
         with:
           mode: 'notebook'
           repository_url: 'https://github.com/COSIMA/cosima-recipes'
@@ -75,7 +75,7 @@ jobs:
         uses: actions/checkout@v4
         
       - name: Test Notebooks
-        uses: rbeucher/smart-notebook-runner
+        uses: rbeucher/smart-notebook-runner@main
         with:
           mode: 'notebook'
           repository_url: ${{ matrix.repository.repo_url }}
@@ -94,7 +94,7 @@ jobs:
         uses: actions/checkout@v4
         
       - name: Validate Notebook Structure
-        uses: rbeucher/smart-notebook-runner
+        uses: rbeucher/smart-notebook-runner@main
         with:
           mode: 'notebook'
           repository_url: 'https://github.com/COSIMA/cosima-recipes'
@@ -117,7 +117,7 @@ jobs:
           sudo apt-get install -y htop iotop
           
       - name: Test with monitoring
-        uses: rbeucher/smart-notebook-runner
+        uses: rbeucher/smart-notebook-runner@main
         with:
           mode: 'notebook'
           repository_url: 'https://github.com/COSIMA/cosima-recipes'
@@ -149,7 +149,7 @@ jobs:
         uses: actions/checkout@v4
         
       - name: Test with error continuation
-        uses: rbeucher/smart-notebook-runner
+        uses: rbeucher/smart-notebook-runner@main
         with:
           mode: 'notebook'
           repository_url: 'https://github.com/COSIMA/cosima-recipes'
