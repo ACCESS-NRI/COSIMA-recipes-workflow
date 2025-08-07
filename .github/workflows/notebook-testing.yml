@@ -16,6 +16,7 @@ on:
 env:
   GADI_USER: ${{ secrets.GADI_USER }}
   GADI_KEY: ${{ secrets.GADI_KEY }}
+  GADI_KEY_PASSPHRASE: ${{ secrets.GADI_KEY_PASSPHRASE }}
   SCRIPTS_DIR: ${{ secrets.GADI_SCRIPTS_DIR }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
