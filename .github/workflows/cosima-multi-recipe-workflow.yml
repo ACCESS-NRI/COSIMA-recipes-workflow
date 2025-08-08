@@ -58,9 +58,9 @@ jobs:
           conda_module: ${{ matrix.recipe.conda_module }}
           project: ${{ matrix.recipe.project }}
           repository_url: ${{ matrix.recipe.repository_url }}
-          gadi_username: ${{ secrets.GADI_USERNAME }}
-          gadi_ssh_key: ${{ secrets.GADI_SSH_KEY }}
-          gadi_ssh_passphrase: ${{ secrets.GADI_SSH_PASSPHRASE }}
+          gadi_username: ${{ secrets.GADI_USER }}
+          gadi_ssh_key: ${{ secrets.GADI_KEY }}
+          gadi_ssh_passphrase: ${{ secrets.GADI_KEY_PASSPHRASE }}
           scripts_dir: ${{ secrets.GADI_SCRIPTS_DIR }}
       
       - name: Monitor Job
