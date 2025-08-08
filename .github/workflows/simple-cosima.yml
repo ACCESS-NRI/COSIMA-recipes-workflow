@@ -1,53 +1,31 @@
-name: Simple COSIMA Recipe
-
+name: COSIMA Single Recipe Test
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
+  pull_request:
+    branches: [ main ]
 
 jobs:
   cosima-recipe:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
       
-      - name: Generate PBS Script for COSIMA Ocean Analysis
+      - name: Run COSIMA Recipe on Gadi
         id: cosima
         uses: rbeucher/smart-recipe-runner@main
         with:
           recipe_type: 'cosima'
-          recipe_name: 'sea_surface_temperature_trends'
+          recipe_name: 'Barotropic_Streamfunction.ipynb'
           repository_url: 'https://github.com/COSIMA/cosima-recipes'
-          config: |
-            {
-              "queue": "normal",
-              "memory": "16gb",
-              "walltime": "02:00:00"
-            }
+          gadi_username: ${{ secrets.GADI_USERNAME }}
+          gadi_ssh_key: ${{ secrets.GADI_SSH_KEY }}
+          gadi_ssh_passphrase: ${{ secrets.GADI_SSH_PASSPHRASE }}
+          scripts_dir: ${{ secrets.GADI_SCRIPTS_DIR }}
+          project: 'tm70'
       
-      - name: Show Results
+      - name: Monitor Job
         run: |
-          echo "✅ COSIMA PBS script generated successfully"
-          echo "Script: ${{ steps.cosima.outputs.pbs_filename }}"
-          echo "Status: ${{ steps.cosima.outputs.status }}"
-          
-          echo ""
-          echo "--- Generated PBS Script ---"
-          cat ${{ steps.cosima.outputs.pbs_filename }}
-          
-      - name: Save PBS Script
-        uses: actions/upload-artifact@v4
-        with:
-          name: cosima-sea-surface-temp-pbs
-          path: ${{ steps.cosima.outputs.pbs_filename }}
-          
-      - name: Submit to GADI
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: 'gadi.nci.org.au'
-          username: ${{ secrets.GADI_USERNAME }}
-          key: ${{ secrets.GADI_SSH_KEY }}        # Encrypted SSH key
-          passphrase: ${{ secrets.GADI_PASSPHRASE }}  # Key passphrase
-          script: |
-            qsub ${{ steps.cosima.outputs.pbs_filename }}
+          echo "COSIMA job submitted!"
+          echo "Job ID: ${{ steps.cosima.outputs.job_id }}"
+          echo "Monitor with: qstat ${{ steps.cosima.outputs.job_id }}"

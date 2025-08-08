@@ -1,0 +1,24 @@
+# Multi-Recipe Configuration for COSIMA Recipes
+# This file defines multiple COSIMA recipes to run with their specific configurations
+
+# Global defaults that apply to all recipes unless overridden
+defaults:
+  type: cosima
+  project: tm70
+  repository_url: https://github.com/COSIMA/cosima-recipes
+  conda_module: conda/analysis3
+  config:
+    queue: normal
+    walltime: "02:00:00" 
+    memory: 8GB
+    group: small
+    storage: "gdata/kj13+gdata/fs38+gdata/oi10+gdata/rr3+gdata/v45+gdata/hh5"
+
+# List of recipes to run
+recipes:
+  - name: Barotropic_Streamfunction.ipynb
+    enabled: true
+    config:
+      walltime: "01:30:00"
+      memory: 4GB
+      
