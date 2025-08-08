@@ -26,10 +26,10 @@ jobs:
         with:
           mode: 'list-recipes'
           config_file: '.github/configs/cosima-all-recipes.yml'
-          gadi_username: ${{ secrets.GADI_USERNAME }}
-          gadi_ssh_key: ${{ secrets.GADI_SSH_KEY }}
-          gadi_ssh_passphrase: ${{ secrets.GADI_SSH_PASSPHRASE }}
-      
+          gadi_username: ${{ secrets.GADI_USER }}
+          gadi_ssh_key: ${{ secrets.GADI_KEY }}
+          gadi_ssh_passphrase: ${{ secrets.GADI_KEY_PASSPHRASE }}
+
       - name: Display Matrix
         run: |
           echo "🚀 Will execute ${{ steps.recipes.outputs.recipe_count }} recipe(s)"
