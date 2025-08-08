@@ -18,9 +18,9 @@ jobs:
           recipe_type: 'cosima'
           recipe_name: 'Barotropic_Streamfunction.ipynb'
           repository_url: 'https://github.com/COSIMA/cosima-recipes'
-          gadi_username: ${{ secrets.GADI_USERNAME }}
-          gadi_ssh_key: ${{ secrets.GADI_SSH_KEY }}
-          gadi_ssh_passphrase: ${{ secrets.GADI_SSH_PASSPHRASE }}
+          gadi_username: ${{ secrets.GADI_USER }}
+          gadi_ssh_key: ${{ secrets.GADI_KEY }}
+          gadi_ssh_passphrase: ${{ secrets.GADI_KEY_PASSPHRASE }}
           scripts_dir: ${{ secrets.GADI_SCRIPTS_DIR }}
           project: 'tm70'
       
