@@ -25,7 +25,7 @@ jobs:
         uses: rbeucher/smart-recipe-runner@main
         with:
           mode: 'list-recipes'
-          config_file: 'examples/cosima-all-recipes.yml'
+          config_file: '.github/configs/cosima-all-recipes.yml'
           gadi_username: ${{ secrets.GADI_USERNAME }}
           gadi_ssh_key: ${{ secrets.GADI_SSH_KEY }}
           gadi_ssh_passphrase: ${{ secrets.GADI_SSH_PASSPHRASE }}
