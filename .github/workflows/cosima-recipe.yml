@@ -21,7 +21,7 @@ jobs:
         id: recipes
         uses: rbeucher/smart-recipe-runner@main
         with:
-          config_file: 'examples/cosima-all-recipes.yml'
+          config_file: '.github/configs/cosima-all-recipes.yml'
 
   execute:
     needs: setup
