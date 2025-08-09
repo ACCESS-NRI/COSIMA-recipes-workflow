@@ -1,0 +1,305 @@
+name: Job Status Dashboard
+
+on:
+  schedule:
+    # Check job status every 15 minutes
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+    inputs:
+      force_update:
+        description: 'Force update all job statuses'
+        required: false
+        default: 'false'
+
+jobs:
+  update-dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+          
+      - name: Install dependencies
+        run: |
+          pip install PyYAML requests paramiko
+          
+      - name: Check Job Statuses on Gadi
+        uses: appleboy/ssh-action@v1
+        with:
+          host: 'gadi.nci.org.au'
+          username: ${{ secrets.GADI_USER }}
+          key: ${{ secrets.GADI_KEY }}
+          passphrase: ${{ secrets.GADI_KEY_PASSPHRASE }}
+          script: |
+            # Create status check script
+            cat > /tmp/check_jobs.py << 'EOF'
+            import subprocess
+            import json
+            import glob
+            import os
+            from pathlib import Path
+            
+            def get_job_status(job_id):
+                """Get job status from qstat"""
+                try:
+                    result = subprocess.run(['qstat', job_id], 
+                                          capture_output=True, text=True)
+                    if result.returncode == 0:
+                        lines = result.stdout.strip().split('\n')
+                        if len(lines) > 2:  # Header + job line
+                            job_line = lines[2].split()
+                            if len(job_line) >= 5:
+                                return job_line[4]  # Job state
+                    return 'completed'  # Job not in queue, assume completed
+                except:
+                    return 'unknown'
+            
+            def check_job_files(scripts_dir):
+                """Check all job status files"""
+                status_files = glob.glob(f"{scripts_dir}/.job_status_*.txt")
+                jobs_status = []
+                
+                for status_file in status_files:
+                    try:
+                        with open(status_file, 'r') as f:
+                            job_info = {}
+                            for line in f:
+                                if '=' in line:
+                                    key, value = line.strip().split('=', 1)
+                                    job_info[key] = value
+                        
+                        job_id = job_info.get('job_id', '')
+                        if job_id and job_id != 'check-ssh-output':
+                            current_status = get_job_status(job_id)
+                            job_info['current_status'] = current_status
+                            
+                            # Check for output files
+                            pbs_file = job_info.get('gadi_path', '')
+                            if pbs_file:
+                                output_file = pbs_file.replace('.pbs', '.out')
+                                error_file = pbs_file.replace('.pbs', '.err')
+                                job_info['output_exists'] = os.path.exists(output_file)
+                                job_info['error_exists'] = os.path.exists(error_file)
+                                
+                                if os.path.exists(output_file):
+                                    stat = os.stat(output_file)
+                                    job_info['output_size'] = stat.st_size
+                                    job_info['last_modified'] = stat.st_mtime
+                        
+                        jobs_status.append(job_info)
+                        
+                    except Exception as e:
+                        print(f"Error reading {status_file}: {e}")
+                
+                return jobs_status
+            
+            # Main execution
+            scripts_dir = "${{ secrets.GADI_SCRIPTS_DIR }}"
+            if os.path.exists(scripts_dir):
+                jobs = check_job_files(scripts_dir)
+                print(json.dumps(jobs, indent=2))
+            else:
+                print("[]")
+            EOF
+            
+            python /tmp/check_jobs.py > /tmp/job_status.json
+            cat /tmp/job_status.json
+            
+      - name: Process Job Status Data
+        id: process-status
+        run: |
+          # The SSH action output will be in the previous step
+          # We'll create a simple processing script
+          cat > process_status.py << 'EOF'
+          import json
+          import sys
+          from datetime import datetime, timezone
+          
+          # Read the job status from SSH action (you'll need to capture this)
+          # For now, create a sample structure
+          jobs = []
+          
+          # Create dashboard data
+          dashboard = {
+              "last_updated": datetime.now(timezone.utc).isoformat(),
+              "total_jobs": len(jobs),
+              "running": len([j for j in jobs if j.get('current_status') == 'R']),
+              "queued": len([j for j in jobs if j.get('current_status') == 'Q']),
+              "completed": len([j for j in jobs if j.get('current_status') == 'completed']),
+              "failed": len([j for j in jobs if j.get('current_status') in ['E', 'F']]),
+              "jobs": jobs
+          }
+          
+          with open('dashboard_data.json', 'w') as f:
+              json.dump(dashboard, f, indent=2)
+          
+          print(f"Processed {len(jobs)} jobs")
+          EOF
+          
+          python process_status.py
+          
+      - name: Update Dashboard Files
+        run: |
+          # Create/update dashboard files
+          mkdir -p dashboard
+          mv dashboard_data.json dashboard/
+          
+          # Create simple HTML dashboard
+          cat > dashboard/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Recipe Job Dashboard</title>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <style>
+                  body { font-family: Arial, sans-serif; margin: 20px; }
+                  .container { max-width: 1200px; margin: 0 auto; }
+                  .stats { display: flex; gap: 20px; margin-bottom: 20px; }
+                  .stat-card { 
+                      background: #f5f5f5; 
+                      padding: 15px; 
+                      border-radius: 5px; 
+                      text-align: center; 
+                  }
+                  .stat-number { font-size: 24px; font-weight: bold; }
+                  .job-table { width: 100%; border-collapse: collapse; }
+                  .job-table th, .job-table td { 
+                      border: 1px solid #ddd; 
+                      padding: 8px; 
+                      text-align: left; 
+                  }
+                  .job-table th { background-color: #f2f2f2; }
+                  .status-running { color: #ff9800; }
+                  .status-completed { color: #4caf50; }
+                  .status-failed { color: #f44336; }
+                  .status-queued { color: #2196f3; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>Recipe Job Dashboard</h1>
+                  <p>Last updated: <span id="last-updated"></span></p>
+                  
+                  <div class="stats">
+                      <div class="stat-card">
+                          <div class="stat-number" id="total-jobs">0</div>
+                          <div>Total Jobs</div>
+                      </div>
+                      <div class="stat-card">
+                          <div class="stat-number status-running" id="running-jobs">0</div>
+                          <div>Running</div>
+                      </div>
+                      <div class="stat-card">
+                          <div class="stat-number status-queued" id="queued-jobs">0</div>
+                          <div>Queued</div>
+                      </div>
+                      <div class="stat-card">
+                          <div class="stat-number status-completed" id="completed-jobs">0</div>
+                          <div>Completed</div>
+                      </div>
+                      <div class="stat-card">
+                          <div class="stat-number status-failed" id="failed-jobs">0</div>
+                          <div>Failed</div>
+                      </div>
+                  </div>
+                  
+                  <table class="job-table">
+                      <thead>
+                          <tr>
+                              <th>Recipe Name</th>
+                              <th>Job ID</th>
+                              <th>Status</th>
+                              <th>Submitted</th>
+                              <th>Output</th>
+                              <th>Actions</th>
+                          </tr>
+                      </thead>
+                      <tbody id="jobs-table">
+                      </tbody>
+                  </table>
+              </div>
+              
+              <script>
+                  async function loadDashboard() {
+                      try {
+                          const response = await fetch('dashboard_data.json');
+                          const data = await response.json();
+                          
+                          document.getElementById('last-updated').textContent = 
+                              new Date(data.last_updated).toLocaleString();
+                          document.getElementById('total-jobs').textContent = data.total_jobs;
+                          document.getElementById('running-jobs').textContent = data.running;
+                          document.getElementById('queued-jobs').textContent = data.queued;
+                          document.getElementById('completed-jobs').textContent = data.completed;
+                          document.getElementById('failed-jobs').textContent = data.failed;
+                          
+                          const tbody = document.getElementById('jobs-table');
+                          tbody.innerHTML = '';
+                          
+                          data.jobs.forEach(job => {
+                              const row = document.createElement('tr');
+                              const statusClass = `status-${job.current_status?.toLowerCase() || 'unknown'}`;
+                              
+                              row.innerHTML = `
+                                  <td>${job.recipe || 'Unknown'}</td>
+                                  <td>${job.job_id || 'N/A'}</td>
+                                  <td class="${statusClass}">${job.current_status || 'Unknown'}</td>
+                                  <td>${job.submission_time || 'N/A'}</td>
+                                  <td>
+                                      ${job.output_exists ? '✅ Output' : '❌ No output'}
+                                      ${job.error_exists ? ' ⚠️ Errors' : ''}
+                                  </td>
+                                  <td>
+                                      <a href="#" onclick="viewJob('${job.job_id}')">View Details</a>
+                                  </td>
+                              `;
+                              tbody.appendChild(row);
+                          });
+                      } catch (error) {
+                          console.error('Error loading dashboard:', error);
+                      }
+                  }
+                  
+                  function viewJob(jobId) {
+                      alert(`Job details for ${jobId} - implement detailed view`);
+                  }
+                  
+                  // Load dashboard on page load
+                  loadDashboard();
+                  
+                  // Auto-refresh every 5 minutes
+                  setInterval(loadDashboard, 5 * 60 * 1000);
+              </script>
+          </body>
+          </html>
+          EOF
+          
+      - name: Commit Dashboard Updates
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          # Switch to or create dashboard branch
+          git checkout -B dashboard
+          
+          # Add dashboard files
+          git add dashboard/
+          
+          # Commit if there are changes
+          if ! git diff --staged --quiet; then
+            git commit -m "Update job dashboard - $(date)"
+            git push origin dashboard --force
+          fi
+          
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dashboard
+          publish_branch: gh-pages
