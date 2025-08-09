@@ -19,11 +19,10 @@ recipes:
   - name: Barotropic_Streamfunction.ipynb
     enabled: true
     config:
-      walltime: "01:30:00"
+      walltime: "00:30:00"
       memory: 4GB
   - name: Barotropic_Streamfunction.ipynb
     enabled: true
     config:
-      walltime: "01:30:00"
+      walltime: "00:30:00"
       memory: 4GB
-      

@@ -1,0 +1,40 @@
+name: COSIMA Recipe Test
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      recipe_name:
+        description: 'Recipe name to run'
+        required: true
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.recipes.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate Recipe Matrix  
+        id: recipes
+        uses: rbeucher/smart-recipe-runner@main
+        with:
+          config_file: 'examples/cosima-all-recipes.yml'
+
+  execute:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Execute Recipe
+        uses: rbeucher/smart-recipe-runner@main
+        with:
+          gadi_username: ${{ secrets.GADI_USER }}
+          gadi_ssh_key: ${{ secrets.GADI_KEY }}
+          gadi_ssh_passphrase: ${{ secrets.GADI_KEY_PASSPHRASE }}
+          submit_job: 'true'
+          scripts_dir: ${{ secrets.GADI_SCRIPTS_DIR }}
