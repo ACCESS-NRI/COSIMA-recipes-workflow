@@ -1,5 +1,11 @@
 name: Job Status Dashboard
 
+# Add permissions for GitHub Pages and repository access
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 on:
   schedule:
     # Check job status every 15 minutes
@@ -14,10 +20,17 @@ on:
 jobs:
   update-dashboard:
     runs-on: ubuntu-latest
+    # Add environment for GitHub Pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+      
     steps:
       - uses: actions/checkout@v4
         with:
+          # Use a personal access token or the default token with proper permissions
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0  # Fetch all history for all branches
           
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -285,21 +298,21 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           
-          # Switch to or create dashboard branch
-          git checkout -B dashboard
+          # Create dashboard files in a temporary directory
+          mkdir -p dashboard-output
+          cp dashboard/* dashboard-output/
           
-          # Add dashboard files
-          git add dashboard/
+          echo "Dashboard files prepared for GitHub Pages deployment"
+          ls -la dashboard-output/
           
-          # Commit if there are changes
-          if ! git diff --staged --quiet; then
-            git commit -m "Update job dashboard - $(date)"
-            git push origin dashboard --force
-          fi
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+        
+      - name: Upload to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dashboard'
           
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dashboard
-          publish_branch: gh-pages
+        id: deployment
+        uses: actions/deploy-pages@v4
