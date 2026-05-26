@@ -114,12 +114,12 @@ jobs:
             '${{ steps.plan.outputs.storage }}' \
             < scripts/gadi_submit_cosima_smoke.sh | tee submit.json
           python3 - <<'PY' >> "$GITHUB_OUTPUT"
-import json
-with open('submit.json', encoding='utf-8') as handle:
-    data = json.load(handle)
-for key in ('pbs_job_id', 'run_dir', 'result_json', 'pbs_script'):
-    print(f'{key}={data[key]}')
-PY
+          import json
+          with open('submit.json', encoding='utf-8') as handle:
+              data = json.load(handle)
+          for key in ('pbs_job_id', 'run_dir', 'result_json', 'pbs_script'):
+              print(f'{key}={data[key]}')
+          PY
 
       - name: Poll PBS result
         id: poll
@@ -136,16 +136,16 @@ PY
             < scripts/gadi_poll_cosima_smoke.sh | tee result.json
           poll_rc=${PIPESTATUS[0]}
           python3 - <<'PY' >> "$GITHUB_OUTPUT"
-import json
-try:
-    with open('result.json', encoding='utf-8') as handle:
-        data = json.load(handle)
-except Exception as exc:
-    data = {'status': 'invalid-result-json', 'error': str(exc)}
-for key, value in data.items():
-    if isinstance(value, (str, int, float)):
-        print(f'{key}={value}')
-PY
+          import json
+          try:
+              with open('result.json', encoding='utf-8') as handle:
+                  data = json.load(handle)
+          except Exception as exc:
+              data = {'status': 'invalid-result-json', 'error': str(exc)}
+          for key, value in data.items():
+              if isinstance(value, (str, int, float)):
+                  print(f'{key}={value}')
+          PY
           echo "poll_exit_code=$poll_rc" >> "$GITHUB_OUTPUT"
 
       - name: Write job summary
