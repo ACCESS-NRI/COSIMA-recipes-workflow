@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "defaults": {
+    "type": "cosima",
+    "repository_url": "https://github.com/COSIMA/cosima-recipes.git",
+    "recipes_ref": "main",
+    "project": "tm70",
+    "queue": "normal",
+    "walltime": "00:30:00",
+    "memory": "4GB",
+    "ncpus": 1,
+    "storage": "gdata/xp65+gdata/ik11+gdata/cj50+gdata/ol01+gdata/hh5",
+    "conda_module": "conda/analysis3",
+    "module_base_path": "/g/data/xp65/public/modules",
+    "poll_interval_seconds": 60,
+    "poll_timeout_minutes": 45
+  },
+  "notebooks": [
+    {
+      "name": "barotropic-streamfunction",
+      "path": "02-Appetisers/Barotropic_Streamfunction.ipynb",
+      "description": "Stage 1 smoke test notebook for COSIMA Recipes",
+      "walltime": "00:30:00",
+      "memory": "4GB"
+    }
+  ]
+}

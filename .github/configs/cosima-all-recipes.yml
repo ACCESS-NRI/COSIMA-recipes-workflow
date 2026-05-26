@@ -1,27 +1,21 @@
-# Multi-Recipe Configuration for COSIMA Recipes
-# This file defines multiple COSIMA recipes to run with their specific configurations
-
-# Global defaults that apply to all recipes unless overridden
+# Legacy YAML configuration retained for compatibility with older tooling.
+# The Stage 1 workflow uses .github/configs/cosima-smoke.json.
 defaults:
   type: cosima
   project: tm70
-  repository_url: https://github.com/COSIMA/cosima-recipes
+  repository_url: https://github.com/COSIMA/cosima-recipes.git
   conda_module: conda/analysis3
+  module_base_path: /g/data/xp65/public/modules
   config:
     queue: normal
-    walltime: "02:00:00" 
-    memory: 8GB
+    walltime: "00:30:00"
+    memory: 4GB
     group: small
-    storage: "gdata/kj13+gdata/fs38+gdata/oi10+gdata/rr3+gdata/v45+gdata/hh5"
+    storage: "gdata/xp65+gdata/ik11+gdata/cj50+gdata/ol01+gdata/hh5"
 
-# List of recipes to run
 recipes:
-  - name: Barotropic_Streamfunction.ipynb
-    enabled: true
-    config:
-      walltime: "00:30:00"
-      memory: 4GB
-  - name: Barotropic_Streamfunction.ipynb
+  - name: barotropic-streamfunction
+    path: 02-Appetisers/Barotropic_Streamfunction.ipynb
     enabled: true
     config:
       walltime: "00:30:00"
