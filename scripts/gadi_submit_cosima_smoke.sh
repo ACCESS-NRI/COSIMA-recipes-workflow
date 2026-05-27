@@ -89,6 +89,7 @@ cd "\$SOURCE_DIR" || exit 20
   module list
   python --version
   python -m jupyter nbconvert --to notebook --execute "\$NOTEBOOK_PATH" \
+    --ExecutePreprocessor.kernel_name=python3 \
     --ExecutePreprocessor.timeout=1800 \
     --output "\${SAFE_NAME}.executed.ipynb" \
     --output-dir "\$RUN_DIR/outputs"
