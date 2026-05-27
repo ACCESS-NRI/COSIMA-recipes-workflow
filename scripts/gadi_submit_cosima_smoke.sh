@@ -28,14 +28,41 @@ case "$NOTEBOOK_PATH" in
   /*|*..*) echo "unsafe notebook path: $NOTEBOOK_PATH" >&2; exit 2 ;;
 esac
 
+diagnose_path() {
+  local path=$1
+  echo "Diagnostics for $path:" >&2
+  df -h "$path" >&2 || true
+  df -i "$path" >&2 || true
+  ls -ld "$path" >&2 || true
+}
+
 mkdir -p "$RUN_DIR" "$RUN_DIR/logs" "$RUN_DIR/results" "$RUN_DIR/outputs"
 SOURCE_DIR="$RUN_DIR/source"
 PBS_SCRIPT="$RUN_DIR/${SAFE_NAME}.pbs"
 SUBMISSION_JSON="$RUN_DIR/results/${SAFE_NAME}.submitted.json"
 RESULT_JSON="$RUN_DIR/results/${SAFE_NAME}.result.json"
 
+if ! touch "$RUN_DIR/.write-test.$$" 2>/dev/null; then
+  echo "run directory is not writable: $RUN_DIR" >&2
+  diagnose_path "$RUN_DIR"
+  exit 4
+fi
+rm -f "$RUN_DIR/.write-test.$$"
+
 if [[ ! -d "$SOURCE_DIR/.git" ]]; then
-  git clone --filter=blob:none "$REPO_URL" "$SOURCE_DIR" >&2
+  if [[ -e "$SOURCE_DIR" ]]; then
+    echo "removing incomplete source directory before clone: $SOURCE_DIR" >&2
+    rm -rf "$SOURCE_DIR"
+  fi
+  CLONE_TMP=$(mktemp -d "$RUN_DIR/source.tmp.XXXXXX")
+  trap 'rm -rf "${CLONE_TMP:-}"' EXIT
+  if ! git clone --filter=blob:none "$REPO_URL" "$CLONE_TMP" >&2; then
+    echo "git clone failed in temporary source directory: $CLONE_TMP" >&2
+    diagnose_path "$RUN_DIR"
+    exit 4
+  fi
+  mv "$CLONE_TMP" "$SOURCE_DIR"
+  trap - EXIT
 fi
 git -C "$SOURCE_DIR" fetch --depth=1 origin "$RECIPES_REF" >&2
 git -C "$SOURCE_DIR" checkout --detach FETCH_HEAD >&2
