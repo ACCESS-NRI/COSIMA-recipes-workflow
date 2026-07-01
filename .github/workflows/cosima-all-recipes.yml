@@ -1,0 +1,179 @@
+name: COSIMA All Recipes
+
+on:
+  workflow_dispatch:
+    inputs:
+      recipes_ref:
+        description: 'COSIMA/cosima-recipes branch, tag, or SHA to test'
+        required: true
+        default: 'main'
+      conda_module:
+        description: 'Analysis environment module to load on Gadi'
+        required: true
+        default: 'conda/analysis3'
+      module_base_path:
+        description: 'Module base path to add before loading conda_module'
+        required: true
+        default: '/g/data/xp65/public/modules'
+      poll_timeout_minutes:
+        description: 'How long GitHub Actions should poll for all PBS-array results'
+        required: true
+        default: '240'
+      execute_timeout_seconds:
+        description: 'Per-notebook nbconvert execution timeout'
+        required: true
+        default: '3600'
+      gadi_work_dir:
+        description: 'Optional Gadi base work directory; defaults to GADI_SCRIPTS_DIR secret'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  all-recipes:
+    name: Run all COSIMA notebooks on Gadi
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Plan all-recipes run
+        id: plan
+        env:
+          RECIPES_REF: ${{ inputs.recipes_ref }}
+          CONDA_MODULE: ${{ inputs.conda_module }}
+          MODULE_BASE_PATH: ${{ inputs.module_base_path }}
+          POLL_TIMEOUT_MINUTES: ${{ inputs.poll_timeout_minutes }}
+          EXECUTE_TIMEOUT_SECONDS: ${{ inputs.execute_timeout_seconds }}
+        run: |
+          python3 scripts/plan_cosima_all_recipes.py \
+            --config .github/configs/cosima-all-recipes.json \
+            --recipes-ref "$RECIPES_REF" \
+            --conda-module "$CONDA_MODULE" \
+            --module-base-path "$MODULE_BASE_PATH" \
+            --poll-timeout-minutes "$POLL_TIMEOUT_MINUTES" \
+            --execute-timeout-seconds "$EXECUTE_TIMEOUT_SECONDS" \
+            --out planned-all-recipes-run.json
+
+      - name: Configure SSH for Gadi
+        env:
+          GADI_KEY: ${{ secrets.GADI_KEY }}
+          GADI_KEY_PASSPHRASE: ${{ secrets.GADI_KEY_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          test -n "${{ secrets.GADI_USER }}" || { echo "GADI_USER secret is not configured" >&2; exit 2; }
+          test -n "$GADI_KEY" || { echo "GADI_KEY secret is not configured" >&2; exit 2; }
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$GADI_KEY" > ~/.ssh/gadi_key
+          chmod 600 ~/.ssh/gadi_key
+          ssh-keyscan -H gadi.nci.org.au >> ~/.ssh/known_hosts
+          eval "$(ssh-agent -s)"
+          if [[ -n "${GADI_KEY_PASSPHRASE:-}" ]]; then
+            ASKPASS=$(mktemp)
+            chmod 700 "$ASKPASS"
+            printf '#!/usr/bin/env bash\nprintf %%s "$GADI_KEY_PASSPHRASE"\n' > "$ASKPASS"
+            DISPLAY=:0 SSH_ASKPASS="$ASKPASS" SSH_ASKPASS_REQUIRE=force ssh-add ~/.ssh/gadi_key </dev/null
+            rm -f "$ASKPASS"
+          else
+            ssh-add ~/.ssh/gadi_key
+          fi
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> "$GITHUB_ENV"
+          echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> "$GITHUB_ENV"
+
+      - name: Submit PBS array job
+        id: submit
+        env:
+          GADI_USER: ${{ secrets.GADI_USER }}
+          GADI_WORK_DIR_INPUT: ${{ inputs.gadi_work_dir }}
+          GADI_WORK_DIR_SECRET: ${{ secrets.GADI_SCRIPTS_DIR }}
+        run: |
+          set -euo pipefail
+          GADI_WORK_DIR="${GADI_WORK_DIR_INPUT:-$GADI_WORK_DIR_SECRET}"
+          test -n "$GADI_WORK_DIR" || { echo "Provide gadi_work_dir or configure GADI_SCRIPTS_DIR secret" >&2; exit 2; }
+          RUN_DIR="${GADI_WORK_DIR%/}/cosima-recipes-ci/runs/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-all-recipes"
+          ssh_opts=(-o BatchMode=yes -o StrictHostKeyChecking=yes)
+          ssh "${ssh_opts[@]}" "${GADI_USER}@gadi.nci.org.au" bash -s -- \
+            "$RUN_DIR" \
+            '${{ steps.plan.outputs.repository_url }}' \
+            '${{ steps.plan.outputs.recipes_ref }}' \
+            '${{ steps.plan.outputs.notebook_roots_arg }}' \
+            '${{ steps.plan.outputs.conda_module }}' \
+            '${{ steps.plan.outputs.module_base_path }}' \
+            '${{ steps.plan.outputs.project }}' \
+            '${{ steps.plan.outputs.queue }}' \
+            '${{ steps.plan.outputs.walltime }}' \
+            '${{ steps.plan.outputs.memory }}' \
+            '${{ steps.plan.outputs.ncpus }}' \
+            '${{ steps.plan.outputs.storage }}' \
+            '${{ steps.plan.outputs.execute_timeout_seconds }}' \
+            '${{ steps.plan.outputs.poll_interval_seconds }}' \
+            < scripts/gadi_submit_cosima_all_recipes.sh | tee submit.json
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          with open('submit.json', encoding='utf-8') as handle:
+              data = json.load(handle)
+          for key in ('pbs_job_id', 'run_dir', 'summary_json', 'notebooks_manifest', 'notebook_count', 'pbs_script'):
+              print(f'{key}={data[key]}')
+          PY
+
+      - name: Poll PBS array results
+        id: poll
+        env:
+          GADI_USER: ${{ secrets.GADI_USER }}
+        run: |
+          set +e
+          ssh_opts=(-o BatchMode=yes -o StrictHostKeyChecking=yes)
+          ssh "${ssh_opts[@]}" "${GADI_USER}@gadi.nci.org.au" bash -s -- \
+            '${{ steps.submit.outputs.run_dir }}' \
+            '${{ steps.submit.outputs.summary_json }}' \
+            '${{ steps.submit.outputs.notebook_count }}' \
+            '${{ steps.plan.outputs.poll_timeout_minutes }}' \
+            '${{ steps.plan.outputs.poll_interval_seconds }}' \
+            '${{ steps.submit.outputs.pbs_job_id }}' \
+            < scripts/gadi_poll_cosima_all_recipes.sh | tee summary.json
+          poll_rc=${PIPESTATUS[0]}
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          try:
+              with open('summary.json', encoding='utf-8') as handle:
+                  data = json.load(handle)
+          except Exception as exc:
+              data = {'status': 'invalid-summary-json', 'error': str(exc)}
+          for key, value in data.items():
+              if isinstance(value, (str, int, float)):
+                  print(f'{key}={value}')
+          PY
+          echo "poll_exit_code=$poll_rc" >> "$GITHUB_OUTPUT"
+
+      - name: Write job summary
+        run: |
+          set -euo pipefail
+          status='${{ steps.poll.outputs.status }}'
+          {
+            echo "## COSIMA Recipes all-recipes run"
+            echo
+            echo "- COSIMA Recipes ref: \`${{ steps.plan.outputs.recipes_ref }}\`"
+            echo "- PBS array job ID: \`${{ steps.submit.outputs.pbs_job_id }}\`"
+            echo "- Status: **${status:-unknown}**"
+            echo "- Expected notebooks: \`${{ steps.poll.outputs.expected_count }}\`"
+            echo "- Completed notebooks: \`${{ steps.poll.outputs.completed_count }}\`"
+            echo "- Passed notebooks: \`${{ steps.poll.outputs.passed_count }}\`"
+            echo "- Failed notebooks: \`${{ steps.poll.outputs.failed_count }}\`"
+            echo "- Missing notebooks: \`${{ steps.poll.outputs.missing_count }}\`"
+            echo "- Gadi run directory: \`${{ steps.submit.outputs.run_dir }}\`"
+            echo "- Notebook manifest: \`${{ steps.submit.outputs.notebooks_manifest }}\`"
+            echo "- Summary JSON: \`${{ steps.submit.outputs.summary_json }}\`"
+            echo "- analysis3 module: \`${{ steps.plan.outputs.conda_module }}\`"
+            echo "- module base path: \`${{ steps.plan.outputs.module_base_path }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$status" != "passed" ]]; then
+            echo "All-recipes run did not pass: ${status:-unknown}" >&2
+            exit 1
+          fi

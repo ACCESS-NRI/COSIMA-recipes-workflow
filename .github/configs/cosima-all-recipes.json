@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "defaults": {
+    "type": "cosima-all-recipes",
+    "repository_url": "https://github.com/COSIMA/cosima-recipes.git",
+    "recipes_ref": "main",
+    "project": "tm70",
+    "queue": "normal",
+    "walltime": "02:00:00",
+    "memory": "8GB",
+    "ncpus": 1,
+    "storage": "gdata/xp65+gdata/ik11+gdata/cj50+gdata/ol01+gdata/hh5",
+    "conda_module": "conda/analysis3",
+    "module_base_path": "/g/data/xp65/public/modules",
+    "poll_interval_seconds": 120,
+    "poll_timeout_minutes": 240,
+    "execute_timeout_seconds": 3600,
+    "notebook_roots": [
+      "01-Cooking-Tutorials",
+      "02-Easy-Recipes",
+      "03-Advanced-Recipes",
+      "04-Regional-Specialties"
+    ]
+  }
+}
