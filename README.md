@@ -6,7 +6,7 @@ ACCESS-NRI maintenance workflow for testing COSIMA Recipes on NCI Gadi.
 
 The active workflow, `.github/workflows/cosima-recipe.yml`, is manually dispatched and runs one manifest-listed notebook on Gadi via PBS:
 
-- `02-Appetisers/Barotropic_Streamfunction.ipynb`
+- `02-Easy-Recipes/Barotropic_Streamfunction.ipynb`
 
 The workflow:
 

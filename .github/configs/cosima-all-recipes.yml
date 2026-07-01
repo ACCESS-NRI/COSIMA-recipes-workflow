@@ -15,7 +15,7 @@ defaults:
 
 recipes:
   - name: barotropic-streamfunction
-    path: 02-Appetisers/Barotropic_Streamfunction.ipynb
+    path: 02-Easy-Recipes/Barotropic_Streamfunction.ipynb
     enabled: true
     config:
       walltime: "00:30:00"

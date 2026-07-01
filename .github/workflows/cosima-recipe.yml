@@ -6,7 +6,7 @@ on:
       notebook_path:
         description: 'Manifest notebook path to run'
         required: true
-        default: '02-Appetisers/Barotropic_Streamfunction.ipynb'
+        default: '02-Easy-Recipes/Barotropic_Streamfunction.ipynb'
       recipes_ref:
         description: 'COSIMA/cosima-recipes branch, tag, or SHA to test'
         required: true
