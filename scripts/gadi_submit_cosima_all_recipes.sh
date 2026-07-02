@@ -210,22 +210,32 @@ EOF
 
 submit_chunk() {
   local script_path=$1
-  local stderr_file=$2
+  local output_prefix=$2
   if env \
     -u QSUB_OPTIONS \
     -u PBS_QSUB_OPTS \
     -u PBS_OPTIONS \
-    command qsub -r y "$script_path" >"$stderr_file.out" 2>"$stderr_file.err"; then
+    command qsub -r y "$script_path" >"$output_prefix.out" 2>"$output_prefix.err"; then
     local job_id
-    job_id=$(<"$stderr_file.out")
+    job_id=$(<"$output_prefix.out")
     job_id=${job_id%%[[:space:]]*}
     printf '%s' "$job_id"
     return 0
   fi
-  if grep -qi 'Array job exceeds server or queue size limit' "$stderr_file.err"; then
+  if grep -qi 'Array job exceeds server or queue size limit' "$output_prefix.err" "$output_prefix.out"; then
     return 90
   fi
-  cat "$stderr_file.err" >&2 || true
+  {
+    echo "qsub submission failed for $script_path" >&2
+    if [[ -s "$output_prefix.err" ]]; then
+      echo "--- qsub stderr ---" >&2
+      cat "$output_prefix.err" >&2 || true
+    fi
+    if [[ -s "$output_prefix.out" ]]; then
+      echo "--- qsub stdout ---" >&2
+      cat "$output_prefix.out" >&2 || true
+    fi
+  }
   return 1
 }
 
