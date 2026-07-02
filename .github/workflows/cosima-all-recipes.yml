@@ -154,6 +154,15 @@ jobs:
           PY
           echo "poll_exit_code=$poll_rc" >> "$GITHUB_OUTPUT"
 
+      - name: Upload all-recipes summary artifact
+        if: always() && hashFiles('summary.json') != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: all-recipes-summary
+          path: summary.json
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Write job summary
         run: |
           set -euo pipefail

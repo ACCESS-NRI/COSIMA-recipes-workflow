@@ -14,6 +14,10 @@ all-recipes workflow summary JSON. It shows per-recipe status, inferred recipe
 style/category, an `analysis3` environment selector, and switchable overview,
 cards, table, and run-detail views.
 
+The dashboard deployment workflow attempts to download the latest successful
+`all-recipes-summary` artifact from the all-recipes workflow and uses that
+`summary.json` to initialize `dashboard/dashboard-data.json`.
+
 ## Workflows
 
 ### Smoke test
