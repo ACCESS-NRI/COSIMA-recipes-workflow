@@ -195,15 +195,15 @@ jobs:
 
       - name: Configure Pages
         if: always()
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v6
 
       - name: Upload dashboard artifact
         if: always()
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ./dashboard
 
       - name: Deploy dashboard to GitHub Pages
         if: always()
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
