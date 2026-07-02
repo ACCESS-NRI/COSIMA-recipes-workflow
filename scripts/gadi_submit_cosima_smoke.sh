@@ -161,7 +161,11 @@ PY
 exit "\$EXIT_CODE"
 EOF
 
-JOB_ID=$(qsub "$PBS_SCRIPT")
+JOB_ID=$(env \
+  -u QSUB_OPTIONS \
+  -u PBS_QSUB_OPTS \
+  -u PBS_OPTIONS \
+  command qsub "$PBS_SCRIPT")
 JOB_ID=${JOB_ID%%[[:space:]]*}
 
 JOB_ID="$JOB_ID" RUN_DIR="$RUN_DIR" NOTEBOOK_PATH="$NOTEBOOK_PATH" SAFE_NAME="$SAFE_NAME" COMMIT="$COMMIT" \

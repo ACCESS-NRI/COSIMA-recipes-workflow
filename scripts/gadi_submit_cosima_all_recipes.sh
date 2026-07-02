@@ -106,6 +106,7 @@ cat > "$PBS_SCRIPT" <<EOF
 #PBS -l ncpus=$NCPUS
 #PBS -l storage=$STORAGE
 #PBS -l wd
+#PBS -r y
 #PBS -J 1-$NOTEBOOK_COUNT
 #PBS -N cosima_all_recipes
 #PBS -o $RUN_DIR/logs/all-recipes.\$PBS_ARRAY_INDEX.pbs.out
@@ -199,7 +200,11 @@ PY
 exit "\$EXIT_CODE"
 EOF
 
-JOB_ID=$(qsub "$PBS_SCRIPT")
+JOB_ID=$(env \
+  -u QSUB_OPTIONS \
+  -u PBS_QSUB_OPTS \
+  -u PBS_OPTIONS \
+  command qsub -r y "$PBS_SCRIPT")
 JOB_ID=${JOB_ID%%[[:space:]]*}
 
 JOB_ID="$JOB_ID" RUN_DIR="$RUN_DIR" COMMIT="$COMMIT" NOTEBOOK_COUNT="$NOTEBOOK_COUNT" NOTEBOOK_ROOTS="$NOTEBOOK_ROOTS" \
