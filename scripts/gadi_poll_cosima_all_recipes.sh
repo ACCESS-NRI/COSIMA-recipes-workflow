@@ -3,7 +3,7 @@
 set -euo pipefail
 
 if [[ $# -ne 6 ]]; then
-  echo "usage: $0 RUN_DIR SUMMARY_JSON NOTEBOOK_COUNT TIMEOUT_MINUTES INTERVAL_SECONDS JOB_ID" >&2
+  echo "usage: $0 RUN_DIR SUMMARY_JSON NOTEBOOK_COUNT TIMEOUT_MINUTES INTERVAL_SECONDS JOB_ID_CSV" >&2
   exit 2
 fi
 
@@ -12,13 +12,15 @@ SUMMARY_JSON=$2
 NOTEBOOK_COUNT=$3
 TIMEOUT_MINUTES=$4
 INTERVAL_SECONDS=$5
-JOB_ID=$6
+JOB_ID_CSV=$6
 RESULTS_DIR="$RUN_DIR/results"
 DEADLINE=$(( $(date +%s) + TIMEOUT_MINUTES * 60 ))
 
+IFS=',' read -r -a JOB_IDS <<< "$JOB_ID_CSV"
+
 aggregate_results() {
   local status_override=${1:-}
-  STATUS_OVERRIDE="$status_override" RUN_DIR="$RUN_DIR" SUMMARY_JSON="$SUMMARY_JSON" NOTEBOOK_COUNT="$NOTEBOOK_COUNT" JOB_ID="$JOB_ID" python3 - <<'PY'
+  STATUS_OVERRIDE="$status_override" RUN_DIR="$RUN_DIR" SUMMARY_JSON="$SUMMARY_JSON" NOTEBOOK_COUNT="$NOTEBOOK_COUNT" JOB_ID_CSV="$JOB_ID_CSV" python3 - <<'PY'
 from __future__ import annotations
 
 import glob
@@ -28,7 +30,7 @@ import os
 run_dir = os.environ["RUN_DIR"]
 summary_json = os.environ["SUMMARY_JSON"]
 expected = int(os.environ["NOTEBOOK_COUNT"])
-job_id = os.environ["JOB_ID"]
+job_ids = [value for value in os.environ.get("JOB_ID_CSV", "").split(",") if value]
 status_override = os.environ.get("STATUS_OVERRIDE", "")
 results_dir = os.path.join(run_dir, "results")
 results = []
@@ -53,7 +55,8 @@ else:
 
 summary = {
     "status": status,
-    "pbs_job_id": job_id,
+    "pbs_job_id": os.environ.get("JOB_ID_CSV", ""),
+    "pbs_job_ids": job_ids,
     "run_dir": run_dir,
     "summary_json": summary_json,
     "expected_count": expected,
@@ -84,15 +87,25 @@ while [[ $(date +%s) -le $DEADLINE ]]; do
     aggregate_results
     exit 0
   fi
-  if command -v qstat >/dev/null 2>&1 && ! qstat "$JOB_ID" >/dev/null 2>&1; then
-    sleep "$INTERVAL_SECONDS"
-    completed=$(find "$RESULTS_DIR" -maxdepth 1 -type f -name '*.result.json' 2>/dev/null | wc -l | tr -d ' ')
-    if [[ "$completed" -ge "$NOTEBOOK_COUNT" ]]; then
-      aggregate_results
-      exit 0
+  if command -v qstat >/dev/null 2>&1; then
+    all_finished=true
+    for job_id in "${JOB_IDS[@]}"; do
+      [[ -n "$job_id" ]] || continue
+      if qstat "$job_id" >/dev/null 2>&1; then
+        all_finished=false
+        break
+      fi
+    done
+    if [[ "$all_finished" == true ]]; then
+      sleep "$INTERVAL_SECONDS"
+      completed=$(find "$RESULTS_DIR" -maxdepth 1 -type f -name '*.result.json' 2>/dev/null | wc -l | tr -d ' ')
+      if [[ "$completed" -ge "$NOTEBOOK_COUNT" ]]; then
+        aggregate_results
+        exit 0
+      fi
+      aggregate_results missing-result
+      exit 4
     fi
-    aggregate_results missing-result
-    exit 4
   fi
   sleep "$INTERVAL_SECONDS"
 done

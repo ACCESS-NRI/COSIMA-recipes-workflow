@@ -119,7 +119,7 @@ jobs:
           import json
           with open('submit.json', encoding='utf-8') as handle:
               data = json.load(handle)
-          for key in ('pbs_job_id', 'run_dir', 'summary_json', 'notebooks_manifest', 'notebook_count', 'pbs_script'):
+            for key in ('pbs_job_id', 'run_dir', 'summary_json', 'notebooks_manifest', 'notebook_count', 'pbs_script', 'chunk_count', 'chunk_size'):
               print(f'{key}={data[key]}')
           PY
 
@@ -161,6 +161,8 @@ jobs:
             echo
             echo "- COSIMA Recipes ref: \`${{ steps.plan.outputs.recipes_ref }}\`"
             echo "- PBS array job ID: \`${{ steps.submit.outputs.pbs_job_id }}\`"
+            echo "- Array chunk count: \`${{ steps.submit.outputs.chunk_count }}\`"
+            echo "- Max chunk size: \`${{ steps.submit.outputs.chunk_size }}\`"
             echo "- Status: **${status:-unknown}**"
             echo "- Expected notebooks: \`${{ steps.poll.outputs.expected_count }}\`"
             echo "- Completed notebooks: \`${{ steps.poll.outputs.completed_count }}\`"

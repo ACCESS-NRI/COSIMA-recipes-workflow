@@ -45,7 +45,7 @@ diagnose_path() {
 mkdir -p "$RUN_DIR" "$RUN_DIR/logs" "$RUN_DIR/results" "$RUN_DIR/outputs"
 SOURCE_DIR="$RUN_DIR/source"
 MANIFEST="$RUN_DIR/notebooks.tsv"
-PBS_SCRIPT="$RUN_DIR/cosima-all-recipes.pbs"
+PBS_SCRIPT_PREFIX="$RUN_DIR/cosima-all-recipes"
 SUMMARY_JSON="$RUN_DIR/results/all-recipes.summary.json"
 
 if ! touch "$RUN_DIR/.write-test.$$" 2>/dev/null; then
@@ -97,7 +97,12 @@ if [[ "$NOTEBOOK_COUNT" -eq 0 ]]; then
   exit 3
 fi
 
-cat > "$PBS_SCRIPT" <<EOF
+write_pbs_script() {
+  local script_path=$1
+  local chunk_start=$2
+  local chunk_count=$3
+
+  cat > "$script_path" <<EOF
 #!/usr/bin/env bash
 #PBS -P $PROJECT
 #PBS -q $QUEUE
@@ -107,7 +112,7 @@ cat > "$PBS_SCRIPT" <<EOF
 #PBS -l storage=$STORAGE
 #PBS -l wd
 #PBS -r y
-#PBS -J 1-$NOTEBOOK_COUNT
+#PBS -J 1-$chunk_count
 #PBS -N cosima_all_recipes
 #PBS -o $RUN_DIR/logs/all-recipes.\$PBS_ARRAY_INDEX.pbs.out
 #PBS -e $RUN_DIR/logs/all-recipes.\$PBS_ARRAY_INDEX.pbs.err
@@ -120,15 +125,17 @@ CONDA_MODULE="$CONDA_MODULE"
 MODULE_BASE_PATH="$MODULE_BASE_PATH"
 COMMIT="$COMMIT"
 EXECUTE_TIMEOUT_SECONDS="$EXECUTE_TIMEOUT_SECONDS"
+CHUNK_START="$chunk_start"
 ARRAY_INDEX="\${PBS_ARRAY_INDEX:-1}"
+GLOBAL_INDEX=\$((CHUNK_START + ARRAY_INDEX - 1))
 START_EPOCH=\$(date +%s)
 STATUS=failed
 EXIT_CODE=0
 
 mkdir -p "\$RUN_DIR/logs" "\$RUN_DIR/results" "\$RUN_DIR/outputs"
-LINE=\$(awk -F '\t' -v idx="\$ARRAY_INDEX" '\$1 == idx { print; exit }' "\$MANIFEST")
+LINE=\$(awk -F '\t' -v idx="\$GLOBAL_INDEX" '\$1 == idx { print; exit }' "\$MANIFEST")
 if [[ -z "\$LINE" ]]; then
-  echo "No notebook manifest entry for array index \$ARRAY_INDEX" >&2
+  echo "No notebook manifest entry for global index \$GLOBAL_INDEX (array index \$ARRAY_INDEX)" >&2
   exit 22
 fi
 IFS=\$'\t' read -r INDEX NOTEBOOK_PATH SAFE_NAME <<< "\$LINE"
@@ -199,22 +206,112 @@ PY
 
 exit "\$EXIT_CODE"
 EOF
+}
 
-JOB_ID=$(env \
-  -u QSUB_OPTIONS \
-  -u PBS_QSUB_OPTS \
-  -u PBS_OPTIONS \
-  command qsub -r y "$PBS_SCRIPT")
-JOB_ID=${JOB_ID%%[[:space:]]*}
+submit_chunk() {
+  local script_path=$1
+  local stderr_file=$2
+  if env \
+    -u QSUB_OPTIONS \
+    -u PBS_QSUB_OPTS \
+    -u PBS_OPTIONS \
+    command qsub -r y "$script_path" >"$stderr_file.out" 2>"$stderr_file.err"; then
+    local job_id
+    job_id=$(<"$stderr_file.out")
+    job_id=${job_id%%[[:space:]]*}
+    printf '%s' "$job_id"
+    return 0
+  fi
+  if grep -qi 'Array job exceeds server or queue size limit' "$stderr_file.err"; then
+    return 90
+  fi
+  cat "$stderr_file.err" >&2 || true
+  return 1
+}
 
-JOB_ID="$JOB_ID" RUN_DIR="$RUN_DIR" COMMIT="$COMMIT" NOTEBOOK_COUNT="$NOTEBOOK_COUNT" NOTEBOOK_ROOTS="$NOTEBOOK_ROOTS" \
-  CONDA_MODULE="$CONDA_MODULE" MODULE_BASE_PATH="$MODULE_BASE_PATH" SUMMARY_JSON="$SUMMARY_JSON" PBS_SCRIPT="$PBS_SCRIPT" MANIFEST="$MANIFEST" \
+MAX_ARRAY_SIZE=${MAX_ARRAY_SIZE:-500}
+if ! [[ "$MAX_ARRAY_SIZE" =~ ^[0-9]+$ ]] || [[ "$MAX_ARRAY_SIZE" -lt 1 ]]; then
+  echo "invalid MAX_ARRAY_SIZE: $MAX_ARRAY_SIZE" >&2
+  exit 2
+fi
+
+chunk_size=$(( NOTEBOOK_COUNT < MAX_ARRAY_SIZE ? NOTEBOOK_COUNT : MAX_ARRAY_SIZE ))
+first_script=''
+job_ids=()
+scripts=()
+
+# Probe and adapt chunk size until the queue accepts the first chunk.
+while :; do
+  first_end=$(( chunk_size < NOTEBOOK_COUNT ? chunk_size : NOTEBOOK_COUNT ))
+  probe_script="$PBS_SCRIPT_PREFIX.chunk001.pbs"
+  write_pbs_script "$probe_script" 1 "$first_end"
+  probe_tmp="$RUN_DIR/results/.qsub-probe"
+  if probe_job_id=$(submit_chunk "$probe_script" "$probe_tmp"); then
+    first_script="$probe_script"
+    job_ids+=("$probe_job_id")
+    scripts+=("$probe_script")
+    break
+  fi
+  rc=$?
+  if [[ "$rc" -eq 90 ]] && [[ "$chunk_size" -gt 1 ]]; then
+    chunk_size=$(( (chunk_size + 1) / 2 ))
+    echo "qsub array size too large; retrying with chunk_size=$chunk_size" >&2
+    continue
+  fi
+  echo "failed to submit first array chunk (size=$first_end)" >&2
+  exit 5
+done
+
+chunk_index=1
+start=1
+while [[ "$start" -le "$NOTEBOOK_COUNT" ]]; do
+  end=$(( start + chunk_size - 1 ))
+  if [[ "$end" -gt "$NOTEBOOK_COUNT" ]]; then
+    end=$NOTEBOOK_COUNT
+  fi
+  count=$(( end - start + 1 ))
+
+  if [[ "$start" -eq 1 ]]; then
+    start=$(( end + 1 ))
+    chunk_index=$(( chunk_index + 1 ))
+    continue
+  fi
+
+  script_path=$(printf '%s.chunk%03d.pbs' "$PBS_SCRIPT_PREFIX" "$chunk_index")
+  write_pbs_script "$script_path" "$start" "$count"
+  chunk_tmp=$(printf '%s/results/.qsub-chunk-%03d' "$RUN_DIR" "$chunk_index")
+  if ! chunk_job_id=$(submit_chunk "$script_path" "$chunk_tmp"); then
+    rc=$?
+    if [[ "$rc" -eq 90 ]]; then
+      echo "array size exceeded for chunk $chunk_index despite accepted first chunk; reduce MAX_ARRAY_SIZE and retry" >&2
+    else
+      echo "failed to submit chunk $chunk_index" >&2
+    fi
+    exit 5
+  fi
+  job_ids+=("$chunk_job_id")
+  scripts+=("$script_path")
+
+  start=$(( end + 1 ))
+  chunk_index=$(( chunk_index + 1 ))
+done
+
+JOB_ID_CSV=$(IFS=,; echo "${job_ids[*]}")
+PBS_SCRIPT_CSV=$(IFS=,; echo "${scripts[*]}")
+CHUNK_COUNT=${#job_ids[@]}
+
+JOB_ID="$JOB_ID_CSV" RUN_DIR="$RUN_DIR" COMMIT="$COMMIT" NOTEBOOK_COUNT="$NOTEBOOK_COUNT" NOTEBOOK_ROOTS="$NOTEBOOK_ROOTS" \
+  CONDA_MODULE="$CONDA_MODULE" MODULE_BASE_PATH="$MODULE_BASE_PATH" SUMMARY_JSON="$SUMMARY_JSON" PBS_SCRIPT="$PBS_SCRIPT_CSV" MANIFEST="$MANIFEST" \
+  CHUNK_COUNT="$CHUNK_COUNT" CHUNK_SIZE="$chunk_size" \
   POLL_INTERVAL_SECONDS="$POLL_INTERVAL_SECONDS" EXECUTE_TIMEOUT_SECONDS="$EXECUTE_TIMEOUT_SECONDS" \
   python3 - <<'PY'
 import json, os
 submitted = {
     "status": "submitted",
     "pbs_job_id": os.environ["JOB_ID"],
+    "pbs_job_ids": os.environ["JOB_ID"].split(","),
+    "chunk_count": int(os.environ["CHUNK_COUNT"]),
+    "chunk_size": int(os.environ["CHUNK_SIZE"]),
     "recipes_commit": os.environ["COMMIT"],
     "notebook_count": int(os.environ["NOTEBOOK_COUNT"]),
     "notebook_roots": os.environ["NOTEBOOK_ROOTS"].split(":"),
@@ -226,6 +323,7 @@ submitted = {
     "summary_json": os.environ["SUMMARY_JSON"],
     "notebooks_manifest": os.environ["MANIFEST"],
     "pbs_script": os.environ["PBS_SCRIPT"],
+    "pbs_scripts": os.environ["PBS_SCRIPT"].split(","),
 }
 with open(os.path.join(os.environ["RUN_DIR"], "results", "all-recipes.submitted.json"), "w", encoding="utf-8") as handle:
     json.dump(submitted, handle, indent=2, sort_keys=True)
