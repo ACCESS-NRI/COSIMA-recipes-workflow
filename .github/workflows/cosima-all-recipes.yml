@@ -154,6 +154,15 @@ jobs:
           PY
           echo "poll_exit_code=$poll_rc" >> "$GITHUB_OUTPUT"
 
+      - name: Upload all-recipes summary artifact
+        if: always() && hashFiles('summary.json') != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: all-recipes-summary
+          path: summary.json
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Write job summary
         run: |
           set -euo pipefail
@@ -195,15 +204,15 @@ jobs:
 
       - name: Configure Pages
         if: always()
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v6
 
       - name: Upload dashboard artifact
         if: always()
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ./dashboard
 
       - name: Deploy dashboard to GitHub Pages
         if: always()
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

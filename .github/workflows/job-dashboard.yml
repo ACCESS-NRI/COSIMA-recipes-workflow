@@ -12,6 +12,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: read
   pages: write
   id-token: write
@@ -34,17 +35,75 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Find latest all-recipes run with summary artifact
+        id: latest-summary
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const workflow_id = 'cosima-all-recipes.yml';
+
+            const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
+              owner,
+              repo,
+              workflow_id,
+              status: 'completed',
+              per_page: 100,
+            });
+
+            let selected = null;
+            for (const run of runs) {
+              if (run.conclusion !== 'success') {
+                continue;
+              }
+              const artifacts = await github.paginate(github.rest.actions.listWorkflowRunArtifacts, {
+                owner,
+                repo,
+                run_id: run.id,
+                per_page: 100,
+              });
+              const match = artifacts.find((artifact) => artifact.name === 'all-recipes-summary' && !artifact.expired);
+              if (match) {
+                selected = { runId: run.id, artifactId: match.id, runAttempt: run.run_attempt };
+                break;
+              }
+            }
+
+            if (!selected) {
+              core.notice('No successful all-recipes run with all-recipes-summary artifact was found.');
+              core.setOutput('run_id', '');
+              return;
+            }
+
+            core.info(`Using all-recipes summary artifact from run ${selected.runId} (attempt ${selected.runAttempt}, artifact ${selected.artifactId}).`);
+            core.setOutput('run_id', String(selected.runId));
+
+      - name: Download latest all-recipes summary artifact
+        if: steps.latest-summary.outputs.run_id != ''
+        uses: actions/download-artifact@v8
+        with:
+          name: all-recipes-summary
+          path: .cache/all-recipes-summary
+          run-id: ${{ steps.latest-summary.outputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build dashboard data from recipe manifest
-        run: python3 scripts/build_dashboard_data.py
+        run: |
+          set -euo pipefail
+          args=()
+          if [[ -s .cache/all-recipes-summary/summary.json ]]; then
+            args+=(--summary-json .cache/all-recipes-summary/summary.json)
+          fi
+          python3 scripts/build_dashboard_data.py "${args[@]}"
 
       - name: Configure Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v6
 
       - name: Upload dashboard artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ./dashboard
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
