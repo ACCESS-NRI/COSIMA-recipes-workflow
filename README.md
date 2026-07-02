@@ -2,6 +2,18 @@
 
 ACCESS-NRI maintenance workflows for testing COSIMA Recipes on NCI Gadi.
 
+
+## Dashboard
+
+A GitHub Pages static dashboard is available at:
+
+- <https://access-nri.github.io/COSIMA-recipes-workflow/>
+
+The dashboard is built from the COSIMA all-recipes manifest and, when available,
+all-recipes workflow summary JSON. It shows per-recipe status, inferred recipe
+style/category, an `analysis3` environment selector, and switchable overview,
+cards, table, and run-detail views.
+
 ## Workflows
 
 ### Smoke test
