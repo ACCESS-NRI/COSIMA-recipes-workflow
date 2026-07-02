@@ -101,6 +101,19 @@ write_pbs_script() {
   local script_path=$1
   local chunk_start=$2
   local chunk_count=$3
+  local submit_mode=$4
+  local pbs_array_directive=''
+  local pbs_output_path
+  local pbs_error_path
+
+  if [[ "$submit_mode" == "array" ]]; then
+    pbs_array_directive="#PBS -J 1-$chunk_count"
+    pbs_output_path="$RUN_DIR/logs/all-recipes.\$PBS_ARRAY_INDEX.pbs.out"
+    pbs_error_path="$RUN_DIR/logs/all-recipes.\$PBS_ARRAY_INDEX.pbs.err"
+  else
+    pbs_output_path="$RUN_DIR/logs/all-recipes.$(printf '%03d' "$chunk_start").pbs.out"
+    pbs_error_path="$RUN_DIR/logs/all-recipes.$(printf '%03d' "$chunk_start").pbs.err"
+  fi
 
   cat > "$script_path" <<EOF
 #!/usr/bin/env bash
@@ -112,10 +125,10 @@ write_pbs_script() {
 #PBS -l storage=$STORAGE
 #PBS -l wd
 #PBS -r y
-#PBS -J 1-$chunk_count
+$pbs_array_directive
 #PBS -N cosima_all_recipes
-#PBS -o $RUN_DIR/logs/all-recipes.\$PBS_ARRAY_INDEX.pbs.out
-#PBS -e $RUN_DIR/logs/all-recipes.\$PBS_ARRAY_INDEX.pbs.err
+#PBS -o $pbs_output_path
+#PBS -e $pbs_error_path
 
 set -uo pipefail
 RUN_DIR="$RUN_DIR"
@@ -126,8 +139,14 @@ MODULE_BASE_PATH="$MODULE_BASE_PATH"
 COMMIT="$COMMIT"
 EXECUTE_TIMEOUT_SECONDS="$EXECUTE_TIMEOUT_SECONDS"
 CHUNK_START="$chunk_start"
-ARRAY_INDEX="\${PBS_ARRAY_INDEX:-1}"
-GLOBAL_INDEX=\$((CHUNK_START + ARRAY_INDEX - 1))
+SUBMIT_MODE="$submit_mode"
+if [[ "\$SUBMIT_MODE" == "array" ]]; then
+  ARRAY_INDEX="\${PBS_ARRAY_INDEX:-1}"
+  GLOBAL_INDEX=\$((CHUNK_START + ARRAY_INDEX - 1))
+else
+  ARRAY_INDEX=1
+  GLOBAL_INDEX="\$CHUNK_START"
+fi
 START_EPOCH=\$(date +%s)
 STATUS=failed
 EXIT_CODE=0
@@ -147,6 +166,7 @@ cd "\$SOURCE_DIR" || exit 20
 {
   echo "COSIMA all-recipes task started at \$(date -Is)"
   echo "PBS job id: \${PBS_JOBID:-unknown}"
+  echo "Submit mode: \$SUBMIT_MODE"
   echo "Array index: \$ARRAY_INDEX"
   echo "Notebook: \$NOTEBOOK_PATH"
   echo "Commit: \$COMMIT"
@@ -246,7 +266,7 @@ if ! [[ "$MAX_ARRAY_SIZE" =~ ^[0-9]+$ ]] || [[ "$MAX_ARRAY_SIZE" -lt 1 ]]; then
 fi
 
 chunk_size=$(( NOTEBOOK_COUNT < MAX_ARRAY_SIZE ? NOTEBOOK_COUNT : MAX_ARRAY_SIZE ))
-first_script=''
+submission_mode='array'
 job_ids=()
 scripts=()
 
@@ -254,26 +274,32 @@ scripts=()
 while :; do
   first_end=$(( chunk_size < NOTEBOOK_COUNT ? chunk_size : NOTEBOOK_COUNT ))
   probe_script="$PBS_SCRIPT_PREFIX.chunk001.pbs"
-  write_pbs_script "$probe_script" 1 "$first_end"
+  write_pbs_script "$probe_script" 1 "$first_end" "$submission_mode"
   probe_tmp="$RUN_DIR/results/.qsub-probe"
   if probe_job_id=$(submit_chunk "$probe_script" "$probe_tmp"); then
-    first_script="$probe_script"
     job_ids+=("$probe_job_id")
     scripts+=("$probe_script")
     break
   fi
   rc=$?
-  if [[ "$rc" -eq 90 ]] && [[ "$chunk_size" -gt 1 ]]; then
+  if [[ "$rc" -eq 90 ]] && [[ "$submission_mode" == "array" ]] && [[ "$chunk_size" -gt 1 ]]; then
     chunk_size=$(( (chunk_size + 1) / 2 ))
     echo "qsub array size too large; retrying with chunk_size=$chunk_size" >&2
     continue
   fi
-  echo "failed to submit first array chunk (size=$first_end)" >&2
+  if [[ "$submission_mode" == "array" ]]; then
+    echo "array submission probe failed; retrying in single-job mode" >&2
+    submission_mode='single'
+    chunk_size=1
+    continue
+  fi
+  echo "failed to submit first chunk (mode=$submission_mode size=$first_end)" >&2
   exit 5
 done
 
 chunk_index=1
-start=1
+start=$(( first_end + 1 ))
+chunk_index=2
 while [[ "$start" -le "$NOTEBOOK_COUNT" ]]; do
   end=$(( start + chunk_size - 1 ))
   if [[ "$end" -gt "$NOTEBOOK_COUNT" ]]; then
@@ -281,18 +307,12 @@ while [[ "$start" -le "$NOTEBOOK_COUNT" ]]; do
   fi
   count=$(( end - start + 1 ))
 
-  if [[ "$start" -eq 1 ]]; then
-    start=$(( end + 1 ))
-    chunk_index=$(( chunk_index + 1 ))
-    continue
-  fi
-
   script_path=$(printf '%s.chunk%03d.pbs' "$PBS_SCRIPT_PREFIX" "$chunk_index")
-  write_pbs_script "$script_path" "$start" "$count"
+  write_pbs_script "$script_path" "$start" "$count" "$submission_mode"
   chunk_tmp=$(printf '%s/results/.qsub-chunk-%03d' "$RUN_DIR" "$chunk_index")
   if ! chunk_job_id=$(submit_chunk "$script_path" "$chunk_tmp"); then
     rc=$?
-    if [[ "$rc" -eq 90 ]]; then
+    if [[ "$rc" -eq 90 ]] && [[ "$submission_mode" == "array" ]]; then
       echo "array size exceeded for chunk $chunk_index despite accepted first chunk; reduce MAX_ARRAY_SIZE and retry" >&2
     else
       echo "failed to submit chunk $chunk_index" >&2
@@ -309,10 +329,15 @@ done
 JOB_ID_CSV=$(IFS=,; echo "${job_ids[*]}")
 PBS_SCRIPT_CSV=$(IFS=,; echo "${scripts[*]}")
 CHUNK_COUNT=${#job_ids[@]}
+if [[ "$submission_mode" == "single" ]]; then
+  CHUNK_SIZE=1
+else
+  CHUNK_SIZE=$chunk_size
+fi
 
 JOB_ID="$JOB_ID_CSV" RUN_DIR="$RUN_DIR" COMMIT="$COMMIT" NOTEBOOK_COUNT="$NOTEBOOK_COUNT" NOTEBOOK_ROOTS="$NOTEBOOK_ROOTS" \
   CONDA_MODULE="$CONDA_MODULE" MODULE_BASE_PATH="$MODULE_BASE_PATH" SUMMARY_JSON="$SUMMARY_JSON" PBS_SCRIPT="$PBS_SCRIPT_CSV" MANIFEST="$MANIFEST" \
-  CHUNK_COUNT="$CHUNK_COUNT" CHUNK_SIZE="$chunk_size" \
+  CHUNK_COUNT="$CHUNK_COUNT" CHUNK_SIZE="$CHUNK_SIZE" SUBMISSION_MODE="$submission_mode" \
   POLL_INTERVAL_SECONDS="$POLL_INTERVAL_SECONDS" EXECUTE_TIMEOUT_SECONDS="$EXECUTE_TIMEOUT_SECONDS" \
   python3 - <<'PY'
 import json, os
@@ -322,6 +347,7 @@ submitted = {
     "pbs_job_ids": os.environ["JOB_ID"].split(","),
     "chunk_count": int(os.environ["CHUNK_COUNT"]),
     "chunk_size": int(os.environ["CHUNK_SIZE"]),
+    "submission_mode": os.environ["SUBMISSION_MODE"],
     "recipes_commit": os.environ["COMMIT"],
     "notebook_count": int(os.environ["NOTEBOOK_COUNT"]),
     "notebook_roots": os.environ["NOTEBOOK_ROOTS"].split(":"),
