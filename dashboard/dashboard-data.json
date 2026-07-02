@@ -1,0 +1,646 @@
+{
+  "assumptions": [
+    "Recipe style is inferred from the top-level COSIMA Recipes folder.",
+    "Recipes without an imported all-recipes summary are shown as not-run for that analysis3 environment.",
+    "The analysis3 environment selector is populated from workflow defaults and any summary JSON files used to build this data."
+  ],
+  "default_environment": "conda/analysis3",
+  "environments": [
+    "conda/analysis3"
+  ],
+  "generated_at": "2026-07-02T07:58:29.469527+00:00",
+  "recipes": [
+    {
+      "enabled": true,
+      "id": "01-cooking-tutorials-01-basics-01-loading-slicing-dicing-output.ipynb",
+      "name": "01-cooking-tutorials-01-basics-01-loading-slicing-dicing-output",
+      "path": "01-Cooking-Tutorials/01-Basics/01-Loading-Slicing-Dicing-Output.ipynb",
+      "root": "01-Cooking-Tutorials",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "tutorial",
+      "style_description": "Introductory and advanced tutorial notebooks.",
+      "style_label": "Cooking tutorial",
+      "title": "01 Loading Slicing Dicing Output"
+    },
+    {
+      "enabled": true,
+      "id": "01-cooking-tutorials-01-basics-02-access-nri_intake_catalog.ipynb",
+      "name": "01-cooking-tutorials-01-basics-02-access-nri-intake-catalog",
+      "path": "01-Cooking-Tutorials/01-Basics/02-ACCESS-NRI_Intake_Catalog.ipynb",
+      "root": "01-Cooking-Tutorials",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "tutorial",
+      "style_description": "Introductory and advanced tutorial notebooks.",
+      "style_label": "Cooking tutorial",
+      "title": "02 ACCESS NRI Intake Catalog"
+    },
+    {
+      "enabled": true,
+      "id": "01-cooking-tutorials-01-basics-03-maps_with_cartopy.ipynb",
+      "name": "01-cooking-tutorials-01-basics-03-maps-with-cartopy",
+      "path": "01-Cooking-Tutorials/01-Basics/03-Maps_with_Cartopy.ipynb",
+      "root": "01-Cooking-Tutorials",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "tutorial",
+      "style_description": "Introductory and advanced tutorial notebooks.",
+      "style_label": "Cooking tutorial",
+      "title": "03 Maps with Cartopy"
+    },
+    {
+      "enabled": true,
+      "id": "01-cooking-tutorials-02-advanced-animations_with_xmovie.ipynb",
+      "name": "01-cooking-tutorials-02-advanced-animations-with-xmovie",
+      "path": "01-Cooking-Tutorials/02-Advanced/Animations_with_xmovie.ipynb",
+      "root": "01-Cooking-Tutorials",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "tutorial",
+      "style_description": "Introductory and advanced tutorial notebooks.",
+      "style_label": "Cooking tutorial",
+      "title": "Animations with xmovie"
+    },
+    {
+      "enabled": true,
+      "id": "01-cooking-tutorials-02-advanced-apply_function_to_every_gridpoint.ipynb",
+      "name": "01-cooking-tutorials-02-advanced-apply-function-to-every-gridpoint",
+      "path": "01-Cooking-Tutorials/02-Advanced/Apply_function_to_every_gridpoint.ipynb",
+      "root": "01-Cooking-Tutorials",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "tutorial",
+      "style_description": "Introductory and advanced tutorial notebooks.",
+      "style_label": "Cooking tutorial",
+      "title": "Apply function to every gridpoint"
+    },
+    {
+      "enabled": true,
+      "id": "01-cooking-tutorials-02-advanced-make_your_own_intake_datastore.ipynb",
+      "name": "01-cooking-tutorials-02-advanced-make-your-own-intake-datastore",
+      "path": "01-Cooking-Tutorials/02-Advanced/Make_Your_Own_Intake_Datastore.ipynb",
+      "root": "01-Cooking-Tutorials",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "tutorial",
+      "style_description": "Introductory and advanced tutorial notebooks.",
+      "style_label": "Cooking tutorial",
+      "title": "Make Your Own Intake Datastore"
+    },
+    {
+      "enabled": true,
+      "id": "01-cooking-tutorials-02-advanced-model_agnostic_analysis.ipynb",
+      "name": "01-cooking-tutorials-02-advanced-model-agnostic-analysis",
+      "path": "01-Cooking-Tutorials/02-Advanced/Model_Agnostic_Analysis.ipynb",
+      "root": "01-Cooking-Tutorials",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "tutorial",
+      "style_description": "Introductory and advanced tutorial notebooks.",
+      "style_label": "Cooking tutorial",
+      "title": "Model Agnostic Analysis"
+    },
+    {
+      "enabled": true,
+      "id": "01-cooking-tutorials-02-advanced-spatial_selection.ipynb",
+      "name": "01-cooking-tutorials-02-advanced-spatial-selection",
+      "path": "01-Cooking-Tutorials/02-Advanced/Spatial_selection.ipynb",
+      "root": "01-Cooking-Tutorials",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "tutorial",
+      "style_description": "Introductory and advanced tutorial notebooks.",
+      "style_label": "Cooking tutorial",
+      "title": "Spatial selection"
+    },
+    {
+      "enabled": true,
+      "id": "01-cooking-tutorials-02-advanced-submitting_analysis_jobs_to_gadi.ipynb",
+      "name": "01-cooking-tutorials-02-advanced-submitting-analysis-jobs-to-gadi",
+      "path": "01-Cooking-Tutorials/02-Advanced/Submitting_analysis_jobs_to_gadi.ipynb",
+      "root": "01-Cooking-Tutorials",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "tutorial",
+      "style_description": "Introductory and advanced tutorial notebooks.",
+      "style_label": "Cooking tutorial",
+      "title": "Submitting analysis jobs to gadi"
+    },
+    {
+      "enabled": true,
+      "id": "01-cooking-tutorials-02-advanced-intake_to_dask_efficiently_chunking.ipynb",
+      "name": "01-cooking-tutorials-02-advanced-intake-to-dask-efficiently-chunking",
+      "path": "01-Cooking-Tutorials/02-Advanced/intake_to_dask_efficiently_chunking.ipynb",
+      "root": "01-Cooking-Tutorials",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "tutorial",
+      "style_description": "Introductory and advanced tutorial notebooks.",
+      "style_label": "Cooking tutorial",
+      "title": "intake to dask efficiently chunking"
+    },
+    {
+      "enabled": true,
+      "id": "02-easy-recipes-barotropic_streamfunction.ipynb",
+      "name": "02-easy-recipes-barotropic-streamfunction",
+      "path": "02-Easy-Recipes/Barotropic_Streamfunction.ipynb",
+      "root": "02-Easy-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "easy",
+      "style_description": "Common analysis examples intended to be quick to run.",
+      "style_label": "Easy recipe",
+      "title": "Barotropic Streamfunction"
+    },
+    {
+      "enabled": true,
+      "id": "02-easy-recipes-compare_ssh_model_obs.ipynb",
+      "name": "02-easy-recipes-compare-ssh-model-obs",
+      "path": "02-Easy-Recipes/Compare_SSH_model_obs.ipynb",
+      "root": "02-Easy-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "easy",
+      "style_description": "Common analysis examples intended to be quick to run.",
+      "style_label": "Easy recipe",
+      "title": "Compare SSH model obs"
+    },
+    {
+      "enabled": true,
+      "id": "02-easy-recipes-compare_sst_sss_temperaturesalinity_to_woa13.ipynb",
+      "name": "02-easy-recipes-compare-sst-sss-temperaturesalinity-to-woa13",
+      "path": "02-Easy-Recipes/Compare_SST_SSS_TemperatureSalinity_to_WOA13.ipynb",
+      "root": "02-Easy-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "easy",
+      "style_description": "Common analysis examples intended to be quick to run.",
+      "style_label": "Easy recipe",
+      "title": "Compare SST SSS TemperatureSalinity to WOA13"
+    },
+    {
+      "enabled": true,
+      "id": "02-easy-recipes-extract_variables_at_ocean_bottom.ipynb",
+      "name": "02-easy-recipes-extract-variables-at-ocean-bottom",
+      "path": "02-Easy-Recipes/Extract_Variables_at_Ocean_Bottom.ipynb",
+      "root": "02-Easy-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "easy",
+      "style_description": "Common analysis examples intended to be quick to run.",
+      "style_label": "Easy recipe",
+      "title": "Extract Variables at Ocean Bottom"
+    },
+    {
+      "enabled": true,
+      "id": "02-easy-recipes-hovmoller_temperature_depth.ipynb",
+      "name": "02-easy-recipes-hovmoller-temperature-depth",
+      "path": "02-Easy-Recipes/Hovmoller_Temperature_Depth.ipynb",
+      "root": "02-Easy-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "easy",
+      "style_description": "Common analysis examples intended to be quick to run.",
+      "style_label": "Easy recipe",
+      "title": "Hovmoller Temperature Depth"
+    },
+    {
+      "enabled": true,
+      "id": "02-easy-recipes-sea_ice_coordinates.ipynb",
+      "name": "02-easy-recipes-sea-ice-coordinates",
+      "path": "02-Easy-Recipes/Sea_Ice_Coordinates.ipynb",
+      "root": "02-Easy-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "easy",
+      "style_description": "Common analysis examples intended to be quick to run.",
+      "style_label": "Easy recipe",
+      "title": "Sea Ice Coordinates"
+    },
+    {
+      "enabled": true,
+      "id": "02-easy-recipes-true_zonal_mean.ipynb",
+      "name": "02-easy-recipes-true-zonal-mean",
+      "path": "02-Easy-Recipes/True_Zonal_Mean.ipynb",
+      "root": "02-Easy-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "easy",
+      "style_description": "Common analysis examples intended to be quick to run.",
+      "style_label": "Easy recipe",
+      "title": "True Zonal Mean"
+    },
+    {
+      "enabled": true,
+      "id": "03-advanced-recipes-along-slope-velocities.ipynb",
+      "name": "03-advanced-recipes-along-slope-velocities",
+      "path": "03-Advanced-Recipes/Along-slope-velocities.ipynb",
+      "root": "03-Advanced-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "advanced",
+      "style_description": "Specialist diagnostics or heavier workflows.",
+      "style_label": "Advanced recipe",
+      "title": "Along slope velocities"
+    },
+    {
+      "enabled": true,
+      "id": "03-advanced-recipes-along_isobath_average.ipynb",
+      "name": "03-advanced-recipes-along-isobath-average",
+      "path": "03-Advanced-Recipes/Along_Isobath_Average.ipynb",
+      "root": "03-Advanced-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "advanced",
+      "style_description": "Specialist diagnostics or heavier workflows.",
+      "style_label": "Advanced recipe",
+      "title": "Along Isobath Average"
+    },
+    {
+      "enabled": true,
+      "id": "03-advanced-recipes-create_contour.ipynb",
+      "name": "03-advanced-recipes-create-contour",
+      "path": "03-Advanced-Recipes/Create_contour.ipynb",
+      "root": "03-Advanced-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "advanced",
+      "style_description": "Specialist diagnostics or heavier workflows.",
+      "style_label": "Advanced recipe",
+      "title": "Create contour"
+    },
+    {
+      "enabled": true,
+      "id": "03-advanced-recipes-cross-contour_transport.ipynb",
+      "name": "03-advanced-recipes-cross-contour-transport",
+      "path": "03-Advanced-Recipes/Cross-contour_transport.ipynb",
+      "root": "03-Advanced-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "advanced",
+      "style_description": "Specialist diagnostics or heavier workflows.",
+      "style_label": "Advanced recipe",
+      "title": "Cross contour transport"
+    },
+    {
+      "enabled": true,
+      "id": "03-advanced-recipes-cross-slope_section.ipynb",
+      "name": "03-advanced-recipes-cross-slope-section",
+      "path": "03-Advanced-Recipes/Cross-slope_section.ipynb",
+      "root": "03-Advanced-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "advanced",
+      "style_description": "Specialist diagnostics or heavier workflows.",
+      "style_label": "Advanced recipe",
+      "title": "Cross slope section"
+    },
+    {
+      "enabled": true,
+      "id": "03-advanced-recipes-eddy-mean_kinetic_energy_decomposition.ipynb",
+      "name": "03-advanced-recipes-eddy-mean-kinetic-energy-decomposition",
+      "path": "03-Advanced-Recipes/Eddy-Mean_Kinetic_Energy_Decomposition.ipynb",
+      "root": "03-Advanced-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "advanced",
+      "style_description": "Specialist diagnostics or heavier workflows.",
+      "style_label": "Advanced recipe",
+      "title": "Eddy Mean Kinetic Energy Decomposition"
+    },
+    {
+      "enabled": true,
+      "id": "03-advanced-recipes-geostrophic_velocities_from_sea_level.ipynb",
+      "name": "03-advanced-recipes-geostrophic-velocities-from-sea-level",
+      "path": "03-Advanced-Recipes/Geostrophic_Velocities_from_Sea_Level.ipynb",
+      "root": "03-Advanced-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "advanced",
+      "style_description": "Specialist diagnostics or heavier workflows.",
+      "style_label": "Advanced recipe",
+      "title": "Geostrophic Velocities from Sea Level"
+    },
+    {
+      "enabled": true,
+      "id": "03-advanced-recipes-heaving_water_mass_transformation_decomposition.ipynb",
+      "name": "03-advanced-recipes-heaving-water-mass-transformation-decomposition",
+      "path": "03-Advanced-Recipes/Heaving_Water_mass_transformation_decomposition.ipynb",
+      "root": "03-Advanced-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "advanced",
+      "style_description": "Specialist diagnostics or heavier workflows.",
+      "style_label": "Advanced recipe",
+      "title": "Heaving Water mass transformation decomposition"
+    },
+    {
+      "enabled": true,
+      "id": "03-advanced-recipes-horizontal_regridding.ipynb",
+      "name": "03-advanced-recipes-horizontal-regridding",
+      "path": "03-Advanced-Recipes/Horizontal_Regridding.ipynb",
+      "root": "03-Advanced-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "advanced",
+      "style_description": "Specialist diagnostics or heavier workflows.",
+      "style_label": "Advanced recipe",
+      "title": "Horizontal Regridding"
+    },
+    {
+      "enabled": true,
+      "id": "03-advanced-recipes-meridional_heat_transport.ipynb",
+      "name": "03-advanced-recipes-meridional-heat-transport",
+      "path": "03-Advanced-Recipes/Meridional_heat_transport.ipynb",
+      "root": "03-Advanced-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "advanced",
+      "style_description": "Specialist diagnostics or heavier workflows.",
+      "style_label": "Advanced recipe",
+      "title": "Meridional heat transport"
+    },
+    {
+      "enabled": true,
+      "id": "03-advanced-recipes-nearest_neighbour_distance.ipynb",
+      "name": "03-advanced-recipes-nearest-neighbour-distance",
+      "path": "03-Advanced-Recipes/Nearest_Neighbour_Distance.ipynb",
+      "root": "03-Advanced-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "advanced",
+      "style_description": "Specialist diagnostics or heavier workflows.",
+      "style_label": "Advanced recipe",
+      "title": "Nearest Neighbour Distance"
+    },
+    {
+      "enabled": true,
+      "id": "03-advanced-recipes-neutral_density.ipynb",
+      "name": "03-advanced-recipes-neutral-density",
+      "path": "03-Advanced-Recipes/Neutral_density.ipynb",
+      "root": "03-Advanced-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "advanced",
+      "style_description": "Specialist diagnostics or heavier workflows.",
+      "style_label": "Advanced recipe",
+      "title": "Neutral density"
+    },
+    {
+      "enabled": true,
+      "id": "03-advanced-recipes-overturning_circulation.ipynb",
+      "name": "03-advanced-recipes-overturning-circulation",
+      "path": "03-Advanced-Recipes/Overturning_Circulation.ipynb",
+      "root": "03-Advanced-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "advanced",
+      "style_description": "Specialist diagnostics or heavier workflows.",
+      "style_label": "Advanced recipe",
+      "title": "Overturning Circulation"
+    },
+    {
+      "enabled": true,
+      "id": "03-advanced-recipes-particle_tracking_with_parcels.ipynb",
+      "name": "03-advanced-recipes-particle-tracking-with-parcels",
+      "path": "03-Advanced-Recipes/Particle_tracking_with_Parcels.ipynb",
+      "root": "03-Advanced-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "advanced",
+      "style_description": "Specialist diagnostics or heavier workflows.",
+      "style_label": "Advanced recipe",
+      "title": "Particle tracking with Parcels"
+    },
+    {
+      "enabled": true,
+      "id": "03-advanced-recipes-relative_vorticity.ipynb",
+      "name": "03-advanced-recipes-relative-vorticity",
+      "path": "03-Advanced-Recipes/Relative_Vorticity.ipynb",
+      "root": "03-Advanced-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "advanced",
+      "style_description": "Specialist diagnostics or heavier workflows.",
+      "style_label": "Advanced recipe",
+      "title": "Relative Vorticity"
+    },
+    {
+      "enabled": true,
+      "id": "03-advanced-recipes-sea_ice_area_concentration_volume_with_obs.ipynb",
+      "name": "03-advanced-recipes-sea-ice-area-concentration-volume-with-obs",
+      "path": "03-Advanced-Recipes/Sea_Ice_Area_Concentration_Volume_with_Obs.ipynb",
+      "root": "03-Advanced-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "advanced",
+      "style_description": "Specialist diagnostics or heavier workflows.",
+      "style_label": "Advanced recipe",
+      "title": "Sea Ice Area Concentration Volume with Obs"
+    },
+    {
+      "enabled": true,
+      "id": "03-advanced-recipes-sea_ice_seasonality_statistics.ipynb",
+      "name": "03-advanced-recipes-sea-ice-seasonality-statistics",
+      "path": "03-Advanced-Recipes/Sea_Ice_Seasonality_Statistics.ipynb",
+      "root": "03-Advanced-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "advanced",
+      "style_description": "Specialist diagnostics or heavier workflows.",
+      "style_label": "Advanced recipe",
+      "title": "Sea Ice Seasonality Statistics"
+    },
+    {
+      "enabled": true,
+      "id": "03-advanced-recipes-surface_water_mass_transformation.ipynb",
+      "name": "03-advanced-recipes-surface-water-mass-transformation",
+      "path": "03-Advanced-Recipes/Surface_Water_Mass_Transformation.ipynb",
+      "root": "03-Advanced-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "advanced",
+      "style_description": "Specialist diagnostics or heavier workflows.",
+      "style_label": "Advanced recipe",
+      "title": "Surface Water Mass Transformation"
+    },
+    {
+      "enabled": true,
+      "id": "03-advanced-recipes-temperature_salinity_diagram.ipynb",
+      "name": "03-advanced-recipes-temperature-salinity-diagram",
+      "path": "03-Advanced-Recipes/Temperature_Salinity_Diagram.ipynb",
+      "root": "03-Advanced-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "advanced",
+      "style_description": "Specialist diagnostics or heavier workflows.",
+      "style_label": "Advanced recipe",
+      "title": "Temperature Salinity Diagram"
+    },
+    {
+      "enabled": true,
+      "id": "03-advanced-recipes-transformation_from_depth_to_potential_density.ipynb",
+      "name": "03-advanced-recipes-transformation-from-depth-to-potential-density",
+      "path": "03-Advanced-Recipes/Transformation_from_Depth_to_Potential_Density.ipynb",
+      "root": "03-Advanced-Recipes",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "advanced",
+      "style_description": "Specialist diagnostics or heavier workflows.",
+      "style_label": "Advanced recipe",
+      "title": "Transformation from Depth to Potential Density"
+    },
+    {
+      "enabled": true,
+      "id": "04-regional-specialties-regional-mom6-forced-by-access-om2.ipynb",
+      "name": "04-regional-specialties-regional-mom6-forced-by-access-om2",
+      "path": "04-Regional-Specialties/regional-mom6-forced-by-access-om2.ipynb",
+      "root": "04-Regional-Specialties",
+      "statuses": {
+        "conda/analysis3": {
+          "status": "not-run"
+        }
+      },
+      "style": "regional",
+      "style_description": "Regional model and domain-specific examples.",
+      "style_label": "Regional specialty",
+      "title": "regional mom6 forced by access om2"
+    }
+  ],
+  "repository": "ACCESS-NRI/COSIMA-recipes-workflow",
+  "runs": [],
+  "schema_version": 1,
+  "source_repository": "https://github.com/COSIMA/cosima-recipes.git",
+  "summary": {
+    "environment_counts": {
+      "conda/analysis3": {
+        "not-run": 38
+      }
+    },
+    "recipe_count": 38,
+    "style_counts": {
+      "advanced": 20,
+      "easy": 7,
+      "regional": 1,
+      "tutorial": 10
+    }
+  },
+  "views": [
+    "overview",
+    "cards",
+    "table",
+    "detail"
+  ]
+}
