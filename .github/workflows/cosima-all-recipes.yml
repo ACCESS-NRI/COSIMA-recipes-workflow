@@ -139,15 +139,48 @@ jobs:
             '${{ steps.plan.outputs.poll_timeout_minutes }}' \
             '${{ steps.plan.outputs.poll_interval_seconds }}' \
             '${{ steps.submit.outputs.pbs_job_id }}' \
-            < scripts/gadi_poll_cosima_all_recipes.sh | tee summary.json
-          poll_rc=${PIPESTATUS[0]}
-          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+            < scripts/gadi_poll_cosima_all_recipes.sh > poll.stdout 2> poll.stderr
+          poll_rc=$?
+
+          # Prefer the canonical summary file written on Gadi.
+          ssh "${ssh_opts[@]}" "${GADI_USER}@gadi.nci.org.au" cat '${{ steps.submit.outputs.summary_json }}' > summary.json
+          fetch_rc=$?
+
+          if [[ "$fetch_rc" -ne 0 ]] || [[ ! -s summary.json ]]; then
+            # Fallback: recover the last JSON object from poll stdout.
+            python3 - <<'PY'
+            import json
+            import pathlib
+
+            stdout_path = pathlib.Path('poll.stdout')
+            summary_path = pathlib.Path('summary.json')
+            lines = stdout_path.read_text(encoding='utf-8', errors='replace').splitlines() if stdout_path.exists() else []
+            for line in reversed(lines):
+                text = line.strip()
+                if not (text.startswith('{') and text.endswith('}')):
+                    continue
+                try:
+                    data = json.loads(text)
+                except Exception:
+                    continue
+                summary_path.write_text(json.dumps(data, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+                break
+            PY
+          fi
+
+          POLL_RC="$poll_rc" FETCH_RC="$fetch_rc" python3 - <<'PY' >> "$GITHUB_OUTPUT"
           import json
+          import os
           try:
               with open('summary.json', encoding='utf-8') as handle:
                   data = json.load(handle)
           except Exception as exc:
-              data = {'status': 'invalid-summary-json', 'error': str(exc)}
+              data = {
+                  'status': 'invalid-summary-json',
+                  'error': str(exc),
+                  'poll_rc': os.environ.get('POLL_RC', ''),
+                  'fetch_rc': os.environ.get('FETCH_RC', ''),
+              }
           for key, value in data.items():
               if isinstance(value, (str, int, float)):
                   print(f'{key}={value}')
