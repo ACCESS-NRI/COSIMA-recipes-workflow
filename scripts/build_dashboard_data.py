@@ -221,6 +221,7 @@ def build_dashboard(defaults_path: Path, manifest_path: Path, summary_patterns: 
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "repository": "ACCESS-NRI/COSIMA-recipes-workflow",
         "source_repository": defaults.get("repository_url", "https://github.com/COSIMA/cosima-recipes.git"),
+        "source_ref": defaults.get("recipes_ref", "main"),
         "default_environment": default_env,
         "environments": environments,
         "views": ["overview", "cards", "table", "detail"],

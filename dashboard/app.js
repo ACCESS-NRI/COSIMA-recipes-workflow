@@ -21,6 +21,16 @@ function statusBadge(status) {
   return `<span class="status status-${esc(key)}">${esc(STATUS_LABELS[key] || key)}</span>`;
 }
 
+function repositoryBaseUrl() {
+  return String(state.data?.source_repository || "https://github.com/COSIMA/cosima-recipes.git").replace(/\.git$/, "");
+}
+
+function notebookUrl(recipe) {
+  const status = selectedStatus(recipe);
+  const ref = status.recipes_commit || state.data?.source_ref || "main";
+  return encodeURI(`${repositoryBaseUrl()}/blob/${ref}/${recipe.path}`);
+}
+
 function selectedStatus(recipe) {
   return recipe.statuses?.[state.environment] || { status: "not-run" };
 }
@@ -66,12 +76,15 @@ function renderStyleBars(recipes) {
 function recipeCard(recipe) {
   const status = selectedStatus(recipe);
   const duration = status.duration_seconds ? `${Math.round(status.duration_seconds / 60)} min` : "—";
-  return `<article class="recipe-card style-${esc(recipe.style)}">
-    <h3>${esc(recipe.title)}</h3>
-    <div class="recipe-path">${esc(recipe.path)}</div>
-    <div class="recipe-meta">${statusBadge(status.status)}<span class="chip">${esc(recipe.style_label)}</span><span class="chip">${esc(duration)}</span></div>
-    <p class="muted">${esc(recipe.style_description)}</p>
-  </article>`;
+  const href = notebookUrl(recipe);
+  return `<a class="recipe-card-link" href="${esc(href)}" aria-label="Open ${esc(recipe.title)} notebook in COSIMA Recipes" title="Open notebook in COSIMA Recipes">
+    <article class="recipe-card style-${esc(recipe.style)}">
+      <h3>${esc(recipe.title)}</h3>
+      <div class="recipe-path">${esc(recipe.path)}</div>
+      <div class="recipe-meta">${statusBadge(status.status)}<span class="chip">${esc(recipe.style_label)}</span><span class="chip">${esc(duration)}</span></div>
+      <p class="muted">${esc(recipe.style_description)}</p>
+    </article>
+  </a>`;
 }
 
 function renderOverview() {
