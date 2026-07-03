@@ -51,7 +51,7 @@ The workflow:
 3. Creates a run directory under `${GADI_SCRIPTS_DIR}/cosima-recipes-ci/runs/<github-run>-<attempt>-all-recipes/` unless `gadi_work_dir` is supplied at dispatch time.
 4. Clones/fetches `COSIMA/cosima-recipes` and checks out the requested ref.
 5. Discovers all `.ipynb` files under the configured recipe roots and writes a tab-separated notebook manifest.
-6. Submits one PBS array job with one array task per notebook. Each task runs `jupyter nbconvert --execute`, writes a per-notebook log, executed notebook, and result JSON.
+6. Submits one PBS job per notebook. Each job runs `jupyter nbconvert --execute`, writes a per-notebook log, executed notebook, and result JSON.
 7. Polls until every notebook has a result JSON, then writes an aggregate summary JSON and fails the GitHub Actions job if any notebook failed, timed out, or did not produce a result.
 
 Useful workflow inputs:
@@ -60,7 +60,7 @@ Useful workflow inputs:
 - `resource_profile`: one of `Medium`, `Large`, `XLarge`, `XXLarge`, or `XXLargeMem`.
 - all profiles run on `normalbw` with fixed CPU/memory presets: `Medium` (4 CPUs, 18GB), `Large` (7 CPUs, 32GB), `XLarge` (14 CPUs, 63GB), `XXLarge` (28 CPUs, 126GB), `XXLargeMem` (28 CPUs, 252GB).
 - default profile is `XLarge`.
-- `poll_timeout_minutes`: how long GitHub Actions should wait for the full PBS array.
+- `poll_timeout_minutes`: how long GitHub Actions should wait for all submitted PBS jobs.
 - `execute_timeout_seconds`: per-notebook `nbconvert` timeout.
 - `gadi_work_dir`: optional override for the Gadi base run directory.
 

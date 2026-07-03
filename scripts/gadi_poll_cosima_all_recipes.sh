@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Poll for all COSIMA Recipes PBS-array result JSON files on Gadi.
+# Poll for all COSIMA Recipes PBS result JSON files on Gadi.
 set -euo pipefail
 
 if [[ $# -ne 6 ]]; then

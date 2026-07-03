@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Plan a COSIMA Recipes all-notebooks PBS-array run."""
+"""Plan a COSIMA Recipes all-notebooks PBS run."""
 from __future__ import annotations
 
 import argparse
