@@ -161,25 +161,25 @@ jobs:
           fetch_rc=$?
 
           if [[ "$fetch_rc" -ne 0 ]] || [[ ! -s summary.json ]]; then
-            # Fallback: recover the last JSON object from poll stdout.
-            python3 - <<'PY'
-            import json
-            import pathlib
+          # Fallback: recover the last JSON object from poll stdout.
+          python3 - <<'PY'
+          import json
+          import pathlib
 
-            stdout_path = pathlib.Path('poll.stdout')
-            summary_path = pathlib.Path('summary.json')
-            lines = stdout_path.read_text(encoding='utf-8', errors='replace').splitlines() if stdout_path.exists() else []
-            for line in reversed(lines):
-                text = line.strip()
-                if not (text.startswith('{') and text.endswith('}')):
-                    continue
-                try:
-                    data = json.loads(text)
-                except Exception:
-                    continue
-                summary_path.write_text(json.dumps(data, indent=2, sort_keys=True) + '\n', encoding='utf-8')
-                break
-            PY
+          stdout_path = pathlib.Path('poll.stdout')
+          summary_path = pathlib.Path('summary.json')
+          lines = stdout_path.read_text(encoding='utf-8', errors='replace').splitlines() if stdout_path.exists() else []
+          for line in reversed(lines):
+            text = line.strip()
+            if not (text.startswith('{') and text.endswith('}')):
+              continue
+            try:
+              data = json.loads(text)
+            except Exception:
+              continue
+            summary_path.write_text(json.dumps(data, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+            break
+          PY
           fi
 
           POLL_RC="$poll_rc" FETCH_RC="$fetch_rc" python3 - <<'PY' >> "$GITHUB_OUTPUT"
