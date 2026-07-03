@@ -26,6 +26,7 @@ from __future__ import annotations
 import glob
 import json
 import os
+import re
 from datetime import datetime, timezone
 
 run_dir = os.environ["RUN_DIR"]
@@ -34,6 +35,98 @@ expected = int(os.environ["NOTEBOOK_COUNT"])
 job_ids = [value for value in os.environ.get("JOB_ID_CSV", "").split(",") if value]
 status_override = os.environ.get("STATUS_OVERRIDE", "")
 results_dir = os.path.join(run_dir, "results")
+
+
+def strip_ansi(value: str) -> str:
+  return re.sub(r"\x1b\[[0-9;]*[A-Za-z]", "", value)
+
+
+def extract_failure_details(result: dict[str, object]) -> dict[str, str]:
+  """Extract a concise failure reason from a notebook log.
+
+  We prefer a concrete exception from the traceback. If unavailable,
+  fall back to nbclient wrapper exceptions or the final non-empty log line.
+  """
+
+  log_path = str(result.get("log_path") or "")
+  safe_name = str(result.get("safe_name") or "")
+  notebook_index = result.get("notebook_index")
+
+  candidates = []
+  if log_path:
+    candidates.append(log_path)
+  if safe_name and notebook_index is not None:
+    try:
+      idx = int(notebook_index)
+      candidates.append(os.path.join(run_dir, "logs", f"{idx:03d}-{safe_name}.notebook.log"))
+    except Exception:
+      pass
+
+  existing = next((path for path in candidates if path and os.path.exists(path)), "")
+  if not existing:
+    return {
+      "exception_type": "",
+      "exception_message": "",
+      "failure_summary": "",
+    }
+  try:
+    with open(existing, encoding="utf-8", errors="replace") as handle:
+      raw_lines = handle.read().splitlines()
+  except Exception as exc:  # pragma: no cover - defensive runtime reporting
+    return {
+      "exception_type": "",
+      "exception_message": f"unable to read log: {exc}",
+      "failure_summary": f"unable to read log: {exc}",
+    }
+
+  lines = [strip_ansi(line).strip() for line in raw_lines]
+  exc_pattern = re.compile(r"^([A-Za-z_][A-Za-z0-9_.]*(?:Error|Exception)):\s*(.*)$")
+
+  # 1) Prefer concrete exception (not the nbclient wrapper).
+  for line in reversed(lines):
+    match = exc_pattern.match(line)
+    if not match:
+      continue
+    etype = match.group(1)
+    if etype.startswith("nbclient."):
+      continue
+    message = match.group(2).strip()
+    summary = f"{etype}: {message}" if message else etype
+    return {
+      "exception_type": etype,
+      "exception_message": message,
+      "failure_summary": summary,
+    }
+
+  # 2) Fall back to nbclient wrapper if that is all we have.
+  for line in reversed(lines):
+    match = exc_pattern.match(line)
+    if not match:
+      continue
+    etype = match.group(1)
+    message = match.group(2).strip()
+    summary = f"{etype}: {message}" if message else etype
+    return {
+      "exception_type": etype,
+      "exception_message": message,
+      "failure_summary": summary,
+    }
+
+  # 3) Last useful non-empty line as a final fallback.
+  for line in reversed(lines):
+    if line:
+      return {
+        "exception_type": "",
+        "exception_message": line,
+        "failure_summary": line,
+      }
+  return {
+    "exception_type": "",
+    "exception_message": "",
+    "failure_summary": "",
+  }
+
+
 results = []
 for path in sorted(glob.glob(os.path.join(results_dir, "*.result.json"))):
     try:
@@ -44,6 +137,26 @@ for path in sorted(glob.glob(os.path.join(results_dir, "*.result.json"))):
 
 passed = [item for item in results if item.get("status") == "passed"]
 failed = [item for item in results if item.get("status") != "passed"]
+failed_enriched = []
+for item in failed:
+  details = extract_failure_details(item)
+  failed_enriched.append(
+    {
+      "notebook_path": item.get("notebook_path", "unknown"),
+      "status": item.get("status", "unknown"),
+      "exit_code": item.get("exit_code", ""),
+      "log_path": item.get("log_path", ""),
+      "exception_type": details.get("exception_type", ""),
+      "exception_message": details.get("exception_message", ""),
+      "failure_summary": details.get("failure_summary", ""),
+    }
+  )
+
+failure_types = {}
+for item in failed_enriched:
+  key = item.get("exception_type") or "Unknown"
+  failure_types[key] = failure_types.get(key, 0) + 1
+
 first_result = results[0] if results else {}
 submitted_path = os.path.join(results_dir, "all-recipes.submitted.json")
 submitted = {}
@@ -84,15 +197,8 @@ summary = {
     "failed_count": len(failed),
     "missing_count": missing_count,
     "results": results,
-    "failed_notebooks": [
-        {
-            "notebook_path": item.get("notebook_path", "unknown"),
-            "status": item.get("status", "unknown"),
-            "exit_code": item.get("exit_code", ""),
-            "log_path": item.get("log_path", ""),
-        }
-        for item in failed
-    ],
+    "failed_notebooks": failed_enriched,
+    "failure_types": dict(sorted(failure_types.items(), key=lambda entry: (-entry[1], entry[0]))),
 }
 with open(summary_json, "w", encoding="utf-8") as handle:
     json.dump(summary, handle, indent=2, sort_keys=True)

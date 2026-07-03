@@ -239,6 +239,38 @@ jobs:
             echo "- analysis3 module: \`${{ steps.plan.outputs.conda_module }}\`"
             echo "- module base path: \`${{ steps.plan.outputs.module_base_path }}\`"
           } >> "$GITHUB_STEP_SUMMARY"
+
+          if [[ -s summary.json ]]; then
+            python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+            import json
+
+            with open('summary.json', encoding='utf-8') as handle:
+              data = json.load(handle)
+
+            failed = data.get('failed_notebooks') or []
+            if failed:
+              print('')
+              print('### Failed Notebooks (Top 20)')
+              print('')
+              print('| Notebook | Exception | Message |')
+              print('|---|---|---|')
+              for item in failed[:20]:
+                notebook = str(item.get('notebook_path', 'unknown')).replace('|', '\\|')
+                etype = str(item.get('exception_type', '') or 'Unknown').replace('|', '\\|')
+                message = str(item.get('exception_message', '') or item.get('failure_summary', '') or '').replace('|', '\\|')
+                if len(message) > 180:
+                  message = message[:177] + '...'
+                print(f'| `{notebook}` | `{etype}` | {message} |')
+
+              failure_types = data.get('failure_types') or {}
+              if failure_types:
+                print('')
+                print('Failure type counts:')
+                for key, value in failure_types.items():
+                  print(f'- `{key}`: {value}')
+            PY
+          fi
+
           if [[ "$status" != "passed" ]]; then
             echo "All-recipes run did not pass: ${status:-unknown}" >&2
             exit 1
