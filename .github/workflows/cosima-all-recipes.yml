@@ -238,7 +238,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
           if [[ -s summary.json ]]; then
-            python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
             import json
 
             with open('summary.json', encoding='utf-8') as handle:
@@ -265,7 +265,7 @@ jobs:
                 print('Failure type counts:')
                 for key, value in failure_types.items():
                   print(f'- `{key}`: {value}')
-            PY
+          PY
           fi
 
           if [[ "$status" != "passed" ]]; then
