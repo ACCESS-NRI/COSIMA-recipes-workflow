@@ -7,6 +7,17 @@ on:
         description: 'COSIMA/cosima-recipes branch, tag, or SHA to test'
         required: true
         default: 'main'
+      resource_profile:
+        description: 'Resource profile on normalbw queue'
+        type: choice
+        required: true
+        default: 'XLarge'
+        options:
+          - Medium
+          - Large
+          - XLarge
+          - XXLarge
+          - XXLargeMem
       conda_module:
         description: 'Analysis environment module to load on Gadi'
         required: true
@@ -49,6 +60,7 @@ jobs:
         id: plan
         env:
           RECIPES_REF: ${{ inputs.recipes_ref }}
+          RESOURCE_PROFILE: ${{ inputs.resource_profile }}
           CONDA_MODULE: ${{ inputs.conda_module }}
           MODULE_BASE_PATH: ${{ inputs.module_base_path }}
           POLL_TIMEOUT_MINUTES: ${{ inputs.poll_timeout_minutes }}
@@ -57,6 +69,7 @@ jobs:
           python3 scripts/plan_cosima_all_recipes.py \
             --config .github/configs/cosima-all-recipes.json \
             --recipes-ref "$RECIPES_REF" \
+            --resource-profile "$RESOURCE_PROFILE" \
             --conda-module "$CONDA_MODULE" \
             --module-base-path "$MODULE_BASE_PATH" \
             --poll-timeout-minutes "$POLL_TIMEOUT_MINUTES" \
@@ -105,6 +118,7 @@ jobs:
             "$RUN_DIR" \
             '${{ steps.plan.outputs.repository_url }}' \
             '${{ steps.plan.outputs.recipes_ref }}' \
+            '${{ steps.plan.outputs.resource_profile }}' \
             '${{ steps.plan.outputs.notebook_roots_arg }}' \
             '${{ steps.plan.outputs.conda_module }}' \
             '${{ steps.plan.outputs.module_base_path }}' \
@@ -204,6 +218,11 @@ jobs:
             echo "## COSIMA Recipes all-recipes run"
             echo
             echo "- COSIMA Recipes ref: \`${{ steps.plan.outputs.recipes_ref }}\`"
+            echo "- Resource profile: \`${{ steps.plan.outputs.resource_profile }}\`"
+            echo "- Queue: \`${{ steps.plan.outputs.queue }}\`"
+            echo "- CPUs: \`${{ steps.plan.outputs.ncpus }}\`"
+            echo "- Memory: \`${{ steps.plan.outputs.memory }}\`"
+            echo "- Walltime: \`${{ steps.plan.outputs.walltime }}\`"
             echo "- PBS array job ID: \`${{ steps.submit.outputs.pbs_job_id }}\`"
             echo "- Submission mode: \`${{ steps.submit.outputs.submission_mode }}\`"
             echo "- Array chunk count: \`${{ steps.submit.outputs.chunk_count }}\`"

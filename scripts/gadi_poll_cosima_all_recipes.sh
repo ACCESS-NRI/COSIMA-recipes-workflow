@@ -45,6 +45,14 @@ for path in sorted(glob.glob(os.path.join(results_dir, "*.result.json"))):
 passed = [item for item in results if item.get("status") == "passed"]
 failed = [item for item in results if item.get("status") != "passed"]
 first_result = results[0] if results else {}
+submitted_path = os.path.join(results_dir, "all-recipes.submitted.json")
+submitted = {}
+if os.path.exists(submitted_path):
+  try:
+    with open(submitted_path, encoding="utf-8") as handle:
+      submitted = json.load(handle)
+  except Exception:
+    submitted = {}
 missing_count = max(expected - len(results), 0)
 if status_override:
     status = status_override
@@ -62,6 +70,11 @@ summary = {
     "run_dir": run_dir,
     "summary_json": summary_json,
     "generated_at": datetime.now(timezone.utc).isoformat(),
+    "resource_profile": first_result.get("resource_profile") or submitted.get("resource_profile", ""),
+    "queue": first_result.get("queue") or submitted.get("queue", ""),
+    "walltime": first_result.get("walltime") or submitted.get("walltime", ""),
+    "memory": first_result.get("memory") or submitted.get("memory", ""),
+    "ncpus": first_result.get("ncpus") or submitted.get("ncpus", 0),
     "conda_module": first_result.get("conda_module", ""),
     "module_base_path": first_result.get("module_base_path", ""),
     "recipes_commit": first_result.get("recipes_commit", ""),

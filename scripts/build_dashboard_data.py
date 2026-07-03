@@ -162,6 +162,11 @@ def load_summaries(patterns: list[str]) -> tuple[dict[str, dict[str, dict[str, A
                 by_env[env][notebook_path] = normalise_result(result, summary)
         runs.append({
             "status": summary.get("status", "unknown"),
+            "resource_profile": summary.get("resource_profile", ""),
+            "queue": summary.get("queue", ""),
+            "walltime": summary.get("walltime", ""),
+            "memory": summary.get("memory", ""),
+            "ncpus": summary.get("ncpus"),
             "conda_module": env,
             "recipes_ref": summary.get("recipes_ref", ""),
             "recipes_commit": summary.get("recipes_commit", ""),

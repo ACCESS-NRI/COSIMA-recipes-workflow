@@ -13,6 +13,15 @@ from typing import Any
 SAFE_VALUE = re.compile(r"^[A-Za-z0-9_./:+@=-]+$")
 SAFE_RESOURCE = re.compile(r"^[A-Za-z0-9_./:+-]+$")
 SAFE_WALLTIME = re.compile(r"^\d{2}:\d{2}:\d{2}$")
+RESOURCE_PROFILES: dict[str, dict[str, Any]] = {
+    "medium": {"label": "Medium", "queue": "normalbw", "ncpus": 4, "memory": "18GB"},
+    "large": {"label": "Large", "queue": "normalbw", "ncpus": 7, "memory": "32GB"},
+    # Backward-compat alias: CLarge now canonicalizes to Large.
+    "clarge": {"label": "Large", "queue": "normalbw", "ncpus": 7, "memory": "32GB"},
+    "xlarge": {"label": "XLarge", "queue": "normalbw", "ncpus": 14, "memory": "63GB"},
+    "xxlarge": {"label": "XXLarge", "queue": "normalbw", "ncpus": 28, "memory": "126GB"},
+    "xxlargemem": {"label": "XXLargeMem", "queue": "normalbw", "ncpus": 28, "memory": "252GB"},
+}
 
 
 def fail(message: str) -> None:
@@ -44,6 +53,10 @@ def load_config(path: str) -> dict[str, Any]:
         return json.load(handle)
 
 
+def normalize_profile_name(name: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", name.lower())
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True)
@@ -52,6 +65,7 @@ def main() -> None:
     parser.add_argument("--module-base-path", default="")
     parser.add_argument("--poll-timeout-minutes", default="")
     parser.add_argument("--execute-timeout-seconds", default="")
+    parser.add_argument("--resource-profile", default="")
     parser.add_argument("--out", default="planned-all-recipes-run.json")
     args = parser.parse_args()
 
@@ -63,9 +77,20 @@ def main() -> None:
         "module_base_path": args.module_base_path,
         "poll_timeout_minutes": args.poll_timeout_minutes,
         "execute_timeout_seconds": args.execute_timeout_seconds,
+        "resource_profile": args.resource_profile,
     }.items():
         if value not in (None, ""):
             planned[key] = value
+
+    profile_input = str(planned.get("resource_profile", "XLarge") or "XLarge")
+    profile_key = normalize_profile_name(profile_input)
+    profile = RESOURCE_PROFILES.get(profile_key)
+    if profile is None:
+        fail(f"resource_profile must be one of: {', '.join(v['label'] for v in RESOURCE_PROFILES.values())}")
+    planned["resource_profile"] = profile["label"]
+    planned["queue"] = profile["queue"]
+    planned["ncpus"] = profile["ncpus"]
+    planned["memory"] = profile["memory"]
 
     require_safe_value("repository_url", planned["repository_url"])
     require_safe_value("recipes_ref", planned["recipes_ref"])
@@ -93,7 +118,7 @@ def main() -> None:
     if output_path:
         with open(output_path, "a", encoding="utf-8") as handle:
             for key in [
-                "repository_url", "recipes_ref", "project", "queue", "walltime", "memory",
+                "repository_url", "recipes_ref", "resource_profile", "project", "queue", "walltime", "memory",
                 "storage", "conda_module", "module_base_path", "poll_interval_seconds",
                 "poll_timeout_minutes", "ncpus", "execute_timeout_seconds", "notebook_roots_arg",
             ]:

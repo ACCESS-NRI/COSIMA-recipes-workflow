@@ -23,6 +23,11 @@ class BuildDashboardDataTests(unittest.TestCase):
         summary = {
             "status": "failed",
             "pbs_job_id": "123.gadi-pbs",
+            "resource_profile": "CLarge",
+            "queue": "normalbw",
+            "walltime": "02:00:00",
+            "memory": "32GB",
+            "ncpus": 7,
             "conda_module": "conda/analysis3-26.04",
             "expected_count": 38,
             "completed_count": 1,
@@ -54,6 +59,11 @@ class BuildDashboardDataTests(unittest.TestCase):
         recipe = next(item for item in data["recipes"] if item["path"] == "02-Easy-Recipes/Barotropic_Streamfunction.ipynb")
         self.assertEqual(recipe["statuses"]["conda/analysis3-26.04"]["status"], "failed")
         self.assertEqual(recipe["statuses"]["conda/analysis3"]["status"], "not-run")
+        run = data["runs"][0]
+        self.assertEqual(run["resource_profile"], "CLarge")
+        self.assertEqual(run["queue"], "normalbw")
+        self.assertEqual(run["memory"], "32GB")
+        self.assertEqual(run["ncpus"], 7)
 
 
 if __name__ == "__main__":

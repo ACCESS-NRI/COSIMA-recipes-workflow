@@ -57,9 +57,15 @@ The workflow:
 Useful workflow inputs:
 
 - `recipes_ref`: COSIMA Recipes branch, tag, or SHA to test.
+- `resource_profile`: one of `Medium`, `Large`, `XLarge`, `XXLarge`, or `XXLargeMem`.
+- all profiles run on `normalbw` with fixed CPU/memory presets: `Medium` (4 CPUs, 18GB), `Large` (7 CPUs, 32GB), `XLarge` (14 CPUs, 63GB), `XXLarge` (28 CPUs, 126GB), `XXLargeMem` (28 CPUs, 252GB).
+- default profile is `XLarge`.
 - `poll_timeout_minutes`: how long GitHub Actions should wait for the full PBS array.
 - `execute_timeout_seconds`: per-notebook `nbconvert` timeout.
 - `gadi_work_dir`: optional override for the Gadi base run directory.
+
+The dashboard Run Detail view includes the resource profile, queue, CPU count,
+memory, and walltime used by each imported all-recipes run summary.
 
 ## Required GitHub secrets
 
