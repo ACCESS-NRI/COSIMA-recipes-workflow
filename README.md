@@ -16,8 +16,9 @@ style/category, an `analysis3` environment selector, and switchable overview,
 cards, table, and run-detail views.
 
 The dashboard deployment workflow runs when an all-recipes workflow completes.
-It downloads that run's `all-recipes-summary` artifact even when the run failed,
-then uses its `summary.json` to initialize `dashboard/dashboard-data.json`.
+It downloads the run's six version-specific summary artifacts, including failed
+jobs, and its selected-version artifact. The environment selector shows the six
+modules selected for that run; a version without a summary is shown as not run.
 Manual and push-triggered deployments use the latest completed run with an
 unexpired summary artifact.
 
@@ -40,7 +41,12 @@ The workflow:
 
 ### All recipes
 
-`.github/workflows/cosima-all-recipes.yml` is manually dispatched and runs every notebook found under the COSIMA Recipes recipe roots configured in `.github/configs/cosima-all-recipes.json`:
+`.github/workflows/cosima-all-recipes.yml` runs every Monday at 08:15
+Australia/Brisbane time (Sunday 22:15 UTC), and can also be dispatched manually.
+At the start of each run it discovers the six newest versioned `analysis3` modules
+on Gadi. New releases enter the next run automatically and the oldest selected
+version drops out. It tests every notebook found under the COSIMA Recipes recipe
+roots configured in `.github/configs/cosima-all-recipes.json`:
 
 - `01-Cooking-Tutorials`
 - `02-Easy-Recipes`
@@ -49,13 +55,14 @@ The workflow:
 
 The workflow:
 
-1. Plans and validates the Gadi/PBS settings from `.github/configs/cosima-all-recipes.json` and workflow inputs.
-2. SSHes to Gadi using repository secrets.
-3. Creates a run directory under `${GADI_SCRIPTS_DIR}/cosima-recipes-ci/runs/<github-run>-<attempt>-all-recipes/` unless `gadi_work_dir` is supplied at dispatch time.
-4. Clones/fetches `COSIMA/cosima-recipes` and checks out the requested ref.
-5. Discovers all `.ipynb` files under the configured recipe roots and writes a tab-separated notebook manifest.
-6. Submits one PBS job per notebook. Each job runs `jupyter nbconvert --execute`, writes a per-notebook log, executed notebook, and result JSON.
-7. Polls until every notebook has a result JSON, then writes an aggregate summary JSON and fails the GitHub Actions job if any notebook failed, timed out, or did not produce a result.
+1. SSHes to Gadi, checks that the configured PBS project has service units, and selects the six newest `analysis3-YY.MM` modules available in the configured module directory.
+2. Runs a separate GitHub Actions job for each version. Failures in one version do not cancel the others.
+3. Plans and validates the Gadi/PBS settings from `.github/configs/cosima-all-recipes.json` and workflow inputs.
+4. Creates a separate run directory under `${GADI_SCRIPTS_DIR}/cosima-recipes-ci/runs/<github-run>-<attempt>-analysis3-<version>/` for each version, unless `gadi_work_dir` is supplied at dispatch time.
+5. Clones/fetches `COSIMA/cosima-recipes` and checks out the requested ref.
+6. Discovers all `.ipynb` files under the configured recipe roots and writes a tab-separated notebook manifest.
+7. Submits one PBS job per notebook and version. Each job runs `jupyter nbconvert --execute`, writes a per-notebook log, executed notebook, and result JSON.
+8. Polls until every notebook has a result JSON, then writes an aggregate summary JSON for that version and fails its GitHub Actions job if any notebook failed, timed out, or did not produce a result.
 
 Useful workflow inputs:
 
