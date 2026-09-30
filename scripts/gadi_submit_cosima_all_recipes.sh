@@ -161,16 +161,22 @@ cd "\$SOURCE_DIR" || exit 20
     # shellcheck disable=SC1091
     source /etc/profile >/dev/null 2>&1 || true
   fi
-  module use "\$MODULE_BASE_PATH"
-  module load "\$CONDA_MODULE"
-  module list
-  python --version
-  python -m jupyter nbconvert --to notebook --execute "\$NOTEBOOK_PATH" \
-    --ExecutePreprocessor.kernel_name=python3 \
-    --ExecutePreprocessor.timeout="\$EXECUTE_TIMEOUT_SECONDS" \
-    --output "\$(basename "\$EXECUTED_NOTEBOOK")" \
-    --output-dir "\$(dirname "\$EXECUTED_NOTEBOOK")"
-  EXIT_CODE=\$?
+  module use /opt/nci/modulefiles || EXIT_CODE=\$?
+  if [[ "\$EXIT_CODE" -eq 0 ]]; then
+    module use "\$MODULE_BASE_PATH" || EXIT_CODE=\$?
+  fi
+  if [[ "\$EXIT_CODE" -eq 0 ]]; then
+    module load "\$CONDA_MODULE" || EXIT_CODE=\$?
+  fi
+  if [[ "\$EXIT_CODE" -eq 0 ]]; then
+    module list
+    python --version
+    python -m jupyter nbconvert --to notebook --execute "\$NOTEBOOK_PATH" \
+      --ExecutePreprocessor.kernel_name=python3 \
+      --ExecutePreprocessor.timeout="\$EXECUTE_TIMEOUT_SECONDS" \
+      --output "\$(basename "\$EXECUTED_NOTEBOOK")" \
+      --output-dir "\$(dirname "\$EXECUTED_NOTEBOOK")" || EXIT_CODE=\$?
+  fi
 } > "\$LOG_PATH" 2>&1 || EXIT_CODE=\$?
 
 END_EPOCH=\$(date +%s)

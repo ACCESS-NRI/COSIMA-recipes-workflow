@@ -1,14 +1,15 @@
 {
   "assumptions": [
     "Recipe style is inferred from the top-level COSIMA Recipes folder.",
-    "Recipes without an imported all-recipes summary are shown as not-run for that analysis3 environment.",
+    "The latest run's discovered notebook list defines the recipe catalogue when available; otherwise the legacy manifest is used.",
+    "Recipes without an imported result are shown as not-run, or missing-result when the run's notebook list includes them.",
     "The analysis3 environment selector is populated from workflow defaults and any summary JSON files used to build this data."
   ],
   "default_environment": "conda/analysis3",
   "environments": [
     "conda/analysis3"
   ],
-  "generated_at": "2026-07-02T07:58:29.469527+00:00",
+  "generated_at": "2026-09-30T21:52:01.463643+00:00",
   "recipes": [
     {
       "enabled": true,
@@ -108,9 +109,9 @@
     },
     {
       "enabled": true,
-      "id": "01-cooking-tutorials-02-advanced-model_agnostic_analysis.ipynb",
-      "name": "01-cooking-tutorials-02-advanced-model-agnostic-analysis",
-      "path": "01-Cooking-Tutorials/02-Advanced/Model_Agnostic_Analysis.ipynb",
+      "id": "01-cooking-tutorials-02-advanced-cfxarray_and_pint.ipynb",
+      "name": "01-cooking-tutorials-02-advanced-cfxarray-and-pint",
+      "path": "01-Cooking-Tutorials/02-Advanced/CFxarray_and_Pint.ipynb",
       "root": "01-Cooking-Tutorials",
       "statuses": {
         "conda/analysis3": {
@@ -120,7 +121,7 @@
       "style": "tutorial",
       "style_description": "Introductory and advanced tutorial notebooks.",
       "style_label": "Cooking tutorial",
-      "title": "Model Agnostic Analysis"
+      "title": "CFxarray and Pint"
     },
     {
       "enabled": true,
@@ -412,9 +413,9 @@
     },
     {
       "enabled": true,
-      "id": "03-advanced-recipes-horizontal_regridding.ipynb",
-      "name": "03-advanced-recipes-horizontal-regridding",
-      "path": "03-Advanced-Recipes/Horizontal_Regridding.ipynb",
+      "id": "03-advanced-recipes-horizontal_regridding_compare_resolutions.ipynb",
+      "name": "03-advanced-recipes-horizontal-regridding-compare-resolutions",
+      "path": "03-Advanced-Recipes/Horizontal_Regridding_Compare_Resolutions.ipynb",
       "root": "03-Advanced-Recipes",
       "statuses": {
         "conda/analysis3": {
@@ -424,7 +425,7 @@
       "style": "advanced",
       "style_description": "Specialist diagnostics or heavier workflows.",
       "style_label": "Advanced recipe",
-      "title": "Horizontal Regridding"
+      "title": "Horizontal Regridding Compare Resolutions"
     },
     {
       "enabled": true,
@@ -622,6 +623,7 @@
   "repository": "ACCESS-NRI/COSIMA-recipes-workflow",
   "runs": [],
   "schema_version": 1,
+  "source_ref": "main",
   "source_repository": "https://github.com/COSIMA/cosima-recipes.git",
   "summary": {
     "environment_counts": {

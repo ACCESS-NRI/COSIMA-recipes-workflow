@@ -65,6 +65,28 @@ class BuildDashboardDataTests(unittest.TestCase):
         self.assertEqual(run["memory"], "32GB")
         self.assertEqual(run["ncpus"], 7)
 
+    def test_discovered_notebooks_replace_stale_manifest_and_show_missing_results(self) -> None:
+        new_path = "03-Advanced-Recipes/Horizontal_Regridding_Compare_Resolutions.ipynb"
+        missing_path = "01-Cooking-Tutorials/02-Advanced/CFxarray_and_Pint.ipynb"
+        summary = {
+            "status": "missing-result",
+            "conda_module": "conda/analysis3",
+            "notebook_paths": [new_path, missing_path],
+            "results": [{"notebook_path": new_path, "status": "passed"}],
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            summary_path = Path(tmp) / "summary.json"
+            summary_path.write_text(json.dumps(summary), encoding="utf-8")
+            data = dashboard.build_dashboard(
+                Path(".github/configs/cosima-all-recipes.json"),
+                Path(".github/configs/cosima-all-recipes.yml"),
+                [str(summary_path)],
+            )
+
+        self.assertEqual([recipe["path"] for recipe in data["recipes"]], [new_path, missing_path])
+        self.assertEqual(data["recipes"][0]["statuses"]["conda/analysis3"]["status"], "passed")
+        self.assertEqual(data["recipes"][1]["statuses"]["conda/analysis3"]["status"], "missing-result")
+
 
 if __name__ == "__main__":
     unittest.main()

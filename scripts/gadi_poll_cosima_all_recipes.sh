@@ -21,8 +21,6 @@ IFS=',' read -r -a JOB_IDS <<< "$JOB_ID_CSV"
 aggregate_results() {
   local status_override=${1:-}
   STATUS_OVERRIDE="$status_override" RUN_DIR="$RUN_DIR" SUMMARY_JSON="$SUMMARY_JSON" NOTEBOOK_COUNT="$NOTEBOOK_COUNT" JOB_ID_CSV="$JOB_ID_CSV" python3 - <<'PY'
-from __future__ import annotations
-
 import glob
 import json
 import os
@@ -41,7 +39,7 @@ def strip_ansi(value: str) -> str:
   return re.sub(r"\x1b\[[0-9;]*[A-Za-z]", "", value)
 
 
-def extract_failure_details(result: dict[str, object]) -> dict[str, str]:
+def extract_failure_details(result):
   """Extract a concise failure reason from a notebook log.
 
   We prefer a concrete exception from the traceback. If unavailable,
@@ -166,6 +164,16 @@ if os.path.exists(submitted_path):
       submitted = json.load(handle)
   except Exception:
     submitted = {}
+notebook_paths = []
+manifest_path = submitted.get("notebooks_manifest") or os.path.join(run_dir, "notebooks.tsv")
+try:
+  with open(manifest_path, encoding="utf-8") as handle:
+    for line in handle:
+      fields = line.rstrip("\n").split("\t", 2)
+      if len(fields) == 3:
+        notebook_paths.append(fields[1])
+except OSError:
+  pass
 missing_count = max(expected - len(results), 0)
 if status_override:
     status = status_override
@@ -188,9 +196,10 @@ summary = {
     "walltime": first_result.get("walltime") or submitted.get("walltime", ""),
     "memory": first_result.get("memory") or submitted.get("memory", ""),
     "ncpus": first_result.get("ncpus") or submitted.get("ncpus", 0),
-    "conda_module": first_result.get("conda_module", ""),
-    "module_base_path": first_result.get("module_base_path", ""),
-    "recipes_commit": first_result.get("recipes_commit", ""),
+    "conda_module": first_result.get("conda_module") or submitted.get("conda_module", ""),
+    "module_base_path": first_result.get("module_base_path") or submitted.get("module_base_path", ""),
+    "recipes_commit": first_result.get("recipes_commit") or submitted.get("recipes_commit", ""),
+    "notebook_paths": notebook_paths,
     "expected_count": expected,
     "completed_count": len(results),
     "passed_count": len(passed),

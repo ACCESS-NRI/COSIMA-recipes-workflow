@@ -8,8 +8,16 @@ on:
       - dashboard/**
       - scripts/build_dashboard_data.py
       - .github/configs/cosima-all-recipes.*
+      - .github/workflows/cosima-all-recipes.yml
       - .github/workflows/job-dashboard.yml
   workflow_dispatch:
+  workflow_run:
+    workflows:
+      - COSIMA All Recipes
+    types:
+      - completed
+    branches:
+      - main
 
 permissions:
   actions: read
@@ -35,7 +43,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Find latest all-recipes run with summary artifact
+      - name: Find all-recipes run with summary artifact
         id: latest-summary
         uses: actions/github-script@v9
         with:
@@ -43,19 +51,18 @@ jobs:
             const { owner, repo } = context.repo;
             const workflow_id = 'cosima-all-recipes.yml';
 
-            const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
-              owner,
-              repo,
-              workflow_id,
-              status: 'completed',
-              per_page: 100,
-            });
+            const runs = context.eventName === 'workflow_run'
+              ? [context.payload.workflow_run]
+              : await github.paginate(github.rest.actions.listWorkflowRuns, {
+                  owner,
+                  repo,
+                  workflow_id,
+                  status: 'completed',
+                  per_page: 100,
+                });
 
             let selected = null;
             for (const run of runs) {
-              if (run.conclusion !== 'success') {
-                continue;
-              }
               const artifacts = await github.paginate(github.rest.actions.listWorkflowRunArtifacts, {
                 owner,
                 repo,
@@ -70,7 +77,7 @@ jobs:
             }
 
             if (!selected) {
-              core.notice('No successful all-recipes run with all-recipes-summary artifact was found.');
+              core.notice('No completed all-recipes run with an unexpired all-recipes-summary artifact was found.');
               core.setOutput('run_id', '');
               return;
             }

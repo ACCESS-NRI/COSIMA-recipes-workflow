@@ -9,14 +9,17 @@ A GitHub Pages static dashboard is available at:
 
 - <https://access-nri.github.io/COSIMA-recipes-workflow/>
 
-The dashboard is built from the COSIMA all-recipes manifest and, when available,
-all-recipes workflow summary JSON. It shows per-recipe status, inferred recipe
+Before the first run, the dashboard uses the legacy COSIMA all-recipes manifest.
+After a run, it uses the notebook paths discovered on Gadi and the run summary
+JSON, including failed and missing results. It shows per-recipe status, inferred recipe
 style/category, an `analysis3` environment selector, and switchable overview,
 cards, table, and run-detail views.
 
-The dashboard deployment workflow attempts to download the latest successful
-`all-recipes-summary` artifact from the all-recipes workflow and uses that
-`summary.json` to initialize `dashboard/dashboard-data.json`.
+The dashboard deployment workflow runs when an all-recipes workflow completes.
+It downloads that run's `all-recipes-summary` artifact even when the run failed,
+then uses its `summary.json` to initialize `dashboard/dashboard-data.json`.
+Manual and push-triggered deployments use the latest completed run with an
+unexpired summary artifact.
 
 ## Workflows
 

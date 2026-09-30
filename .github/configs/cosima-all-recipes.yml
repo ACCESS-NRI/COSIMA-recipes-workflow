@@ -33,8 +33,8 @@ recipes:
   - name: 01-cooking-tutorials-02-advanced-make-your-own-intake-datastore
     path: 01-Cooking-Tutorials/02-Advanced/Make_Your_Own_Intake_Datastore.ipynb
     enabled: true
-  - name: 01-cooking-tutorials-02-advanced-model-agnostic-analysis
-    path: 01-Cooking-Tutorials/02-Advanced/Model_Agnostic_Analysis.ipynb
+  - name: 01-cooking-tutorials-02-advanced-cfxarray-and-pint
+    path: 01-Cooking-Tutorials/02-Advanced/CFxarray_and_Pint.ipynb
     enabled: true
   - name: 01-cooking-tutorials-02-advanced-spatial-selection
     path: 01-Cooking-Tutorials/02-Advanced/Spatial_selection.ipynb
@@ -90,8 +90,8 @@ recipes:
   - name: 03-advanced-recipes-heaving-water-mass-transformation-decomposition
     path: 03-Advanced-Recipes/Heaving_Water_mass_transformation_decomposition.ipynb
     enabled: true
-  - name: 03-advanced-recipes-horizontal-regridding
-    path: 03-Advanced-Recipes/Horizontal_Regridding.ipynb
+  - name: 03-advanced-recipes-horizontal-regridding-compare-resolutions
+    path: 03-Advanced-Recipes/Horizontal_Regridding_Compare_Resolutions.ipynb
     enabled: true
   - name: 03-advanced-recipes-meridional-heat-transport
     path: 03-Advanced-Recipes/Meridional_heat_transport.ipynb
