@@ -27,6 +27,7 @@ class BuildDashboardDataTests(unittest.TestCase):
             "queue": "normalbw",
             "walltime": "02:00:00",
             "memory": "32GB",
+            "jobfs": "100GB",
             "ncpus": 7,
             "conda_module": "conda/analysis3-26.04",
             "expected_count": 38,
@@ -62,6 +63,7 @@ class BuildDashboardDataTests(unittest.TestCase):
         self.assertEqual(run["resource_profile"], "CLarge")
         self.assertEqual(run["queue"], "normalbw")
         self.assertEqual(run["memory"], "32GB")
+        self.assertEqual(run["jobfs"], "100GB")
         self.assertEqual(run["ncpus"], 7)
 
     def test_discovered_notebooks_replace_stale_manifest_and_show_missing_results(self) -> None:

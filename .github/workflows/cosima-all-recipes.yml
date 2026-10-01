@@ -207,6 +207,7 @@ jobs:
             '${{ steps.plan.outputs.memory }}' \
             '${{ steps.plan.outputs.ncpus }}' \
             '${{ steps.plan.outputs.storage }}' \
+            '${{ steps.plan.outputs.jobfs }}' \
             '${{ steps.plan.outputs.execute_timeout_seconds }}' \
             '${{ steps.plan.outputs.poll_interval_seconds }}' \
             < scripts/gadi_submit_cosima_all_recipes.sh | tee submit.json
@@ -301,6 +302,7 @@ jobs:
             echo "- Queue: \`${{ steps.plan.outputs.queue }}\`"
             echo "- CPUs: \`${{ steps.plan.outputs.ncpus }}\`"
             echo "- Memory: \`${{ steps.plan.outputs.memory }}\`"
+            echo "- JobFS: \`${{ steps.plan.outputs.jobfs }}\`"
             echo "- Walltime: \`${{ steps.plan.outputs.walltime }}\`"
             echo "- PBS job ID(s): \`${{ steps.submit.outputs.pbs_job_id }}\`"
             echo "- Status: **${status:-unknown}**"

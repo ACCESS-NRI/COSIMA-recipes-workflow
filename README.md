@@ -61,7 +61,7 @@ The workflow:
 4. Creates a separate run directory under `${GADI_SCRIPTS_DIR}/cosima-recipes-ci/runs/<github-run>-<attempt>-analysis3-<version>/` for each version, unless `gadi_work_dir` is supplied at dispatch time.
 5. Clones/fetches `COSIMA/cosima-recipes` and checks out the requested ref.
 6. Discovers all `.ipynb` files under the configured recipe roots and writes a tab-separated notebook manifest.
-7. Submits one PBS job per notebook and version. Each job runs `jupyter nbconvert --execute`, writes a per-notebook log, executed notebook, and result JSON.
+7. Submits one PBS job per notebook and version with 100 GB of job-local scratch (`jobfs`). Each job runs `jupyter nbconvert --execute`, writes a per-notebook log, executed notebook, and result JSON.
 8. Polls until every notebook has a result JSON, then writes an aggregate summary JSON for that version and fails its GitHub Actions job if any notebook failed, timed out, or did not produce a result.
 
 Useful workflow inputs:
@@ -75,7 +75,7 @@ Useful workflow inputs:
 - `gadi_work_dir`: optional override for the Gadi base run directory.
 
 The dashboard Run Detail view includes the resource profile, queue, CPU count,
-memory, and walltime used by each imported all-recipes run summary.
+memory, jobfs, and walltime used by each imported all-recipes run summary.
 
 ## Required GitHub secrets
 

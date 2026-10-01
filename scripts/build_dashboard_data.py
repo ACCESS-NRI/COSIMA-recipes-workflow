@@ -174,6 +174,7 @@ def load_summaries(patterns: list[str]) -> tuple[dict[str, dict[str, dict[str, A
             "queue": summary.get("queue", ""),
             "walltime": summary.get("walltime", ""),
             "memory": summary.get("memory", ""),
+            "jobfs": summary.get("jobfs", ""),
             "ncpus": summary.get("ncpus"),
             "conda_module": env,
             "recipes_ref": summary.get("recipes_ref", ""),

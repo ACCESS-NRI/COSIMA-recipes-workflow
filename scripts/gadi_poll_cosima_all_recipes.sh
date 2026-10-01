@@ -150,11 +150,6 @@ for item in failed:
     }
   )
 
-failure_types = {}
-for item in failed_enriched:
-  key = item.get("exception_type") or "Unknown"
-  failure_types[key] = failure_types.get(key, 0) + 1
-
 first_result = results[0] if results else {}
 submitted_path = os.path.join(results_dir, "all-recipes.submitted.json")
 submitted = {}
@@ -165,6 +160,7 @@ if os.path.exists(submitted_path):
   except Exception:
     submitted = {}
 notebook_paths = []
+manifest_entries = []
 manifest_path = submitted.get("notebooks_manifest") or os.path.join(run_dir, "notebooks.tsv")
 try:
   with open(manifest_path, encoding="utf-8") as handle:
@@ -172,9 +168,43 @@ try:
       fields = line.rstrip("\n").split("\t", 2)
       if len(fields) == 3:
         notebook_paths.append(fields[1])
+        manifest_entries.append(fields)
 except OSError:
   pass
 missing_count = max(expected - len(results), 0)
+actual_result_paths = {item.get("notebook_path") for item in results}
+missing_results = []
+for index_text, notebook_path, safe_name in manifest_entries:
+  if notebook_path in actual_result_paths:
+    continue
+  index = int(index_text)
+  pbs_out = os.path.join(run_dir, "logs", f"all-recipes.{index:03d}.pbs.out")
+  reason = ""
+  if os.path.exists(pbs_out):
+    with open(pbs_out, encoding="utf-8", errors="replace") as handle:
+      for line in handle:
+        if "killed due to" in line:
+          reason = line.strip()
+  exception_type = "PBSJobKilled" if reason else "MissingResult"
+  message = reason or "PBS job ended without a notebook result JSON"
+  missing = {
+      "notebook_index": index,
+      "notebook_path": notebook_path,
+      "safe_name": safe_name,
+      "status": "missing-result",
+      "pbs_job_id": job_ids[index - 1] if index <= len(job_ids) else "",
+      "log_path": pbs_out,
+      "exception_type": exception_type,
+      "exception_message": message,
+      "failure_summary": message,
+  }
+  missing_results.append(missing)
+  failed_enriched.append(missing)
+
+failure_types = {}
+for item in failed_enriched:
+  key = item.get("exception_type") or "Unknown"
+  failure_types[key] = failure_types.get(key, 0) + 1
 if status_override:
     status = status_override
 elif missing_count:
@@ -195,6 +225,7 @@ summary = {
     "queue": first_result.get("queue") or submitted.get("queue", ""),
     "walltime": first_result.get("walltime") or submitted.get("walltime", ""),
     "memory": first_result.get("memory") or submitted.get("memory", ""),
+    "jobfs": first_result.get("jobfs") or submitted.get("jobfs", ""),
     "ncpus": first_result.get("ncpus") or submitted.get("ncpus", 0),
     "conda_module": first_result.get("conda_module") or submitted.get("conda_module", ""),
     "module_base_path": first_result.get("module_base_path") or submitted.get("module_base_path", ""),
@@ -205,7 +236,7 @@ summary = {
     "passed_count": len(passed),
     "failed_count": len(failed),
     "missing_count": missing_count,
-    "results": results,
+    "results": results + missing_results,
     "failed_notebooks": failed_enriched,
     "failure_types": dict(sorted(failure_types.items(), key=lambda entry: (-entry[1], entry[0]))),
 }

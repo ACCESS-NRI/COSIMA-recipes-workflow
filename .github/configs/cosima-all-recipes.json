@@ -9,6 +9,7 @@
     "queue": "normalbw",
     "walltime": "02:00:00",
     "memory": "63GB",
+    "jobfs": "100GB",
     "ncpus": 14,
     "storage": "gdata/xp65+gdata/ik11+gdata/cj50+gdata/ol01+gdata/hh5",
     "conda_module": "conda/analysis3",
