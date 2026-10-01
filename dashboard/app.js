@@ -89,8 +89,7 @@ function recipeCard(recipe) {
 
 function renderOverview() {
   const recipes = filteredRecipes();
-  const examples = recipes.slice(0, 8);
-  return `${renderStats(recipes)}${renderStyleBars(recipes)}<section><h2 class="view-title">Recipe snapshot</h2><p class="view-sub">Showing ${examples.length} of ${recipes.length} recipes for ${esc(state.environment)}.</p><div class="overview-grid">${examples.map(recipeCard).join("")}</div></section>`;
+  return `${renderStats(recipes)}${renderStyleBars(recipes)}<section><h2 class="view-title">All recipes</h2><p class="view-sub">Showing ${recipes.length} recipes for ${esc(state.environment)}.</p><div class="overview-grid">${recipes.map(recipeCard).join("")}</div></section>`;
 }
 
 function renderCards() {
