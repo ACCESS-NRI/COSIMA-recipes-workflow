@@ -21,6 +21,8 @@ jobs, and its selected-version artifact. The environment selector shows the six
 modules selected for that run; a version without a summary is shown as not run.
 Manual and push-triggered deployments use the latest completed run with an
 unexpired summary artifact.
+Until the first GitHub Actions all-recipes run produces artifacts, the checked-in
+dashboard data shows the [1 October 2026 Gadi validation](reports/2026-10-01-gadi-validation.md).
 
 ## Workflows
 

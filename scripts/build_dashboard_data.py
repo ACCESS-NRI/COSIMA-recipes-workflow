@@ -188,7 +188,7 @@ def load_summaries(patterns: list[str]) -> tuple[dict[str, dict[str, dict[str, A
             "missing_count": summary.get("missing_count"),
             "generated_at": summary.get("generated_at", ""),
             "notebook_paths": notebook_paths,
-            "source_file": path,
+            "source_file": summary.get("summary_json") or path,
         })
     return by_env, runs, environments
 

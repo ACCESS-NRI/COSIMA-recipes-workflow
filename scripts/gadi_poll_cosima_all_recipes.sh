@@ -179,6 +179,8 @@ for index_text, notebook_path, safe_name in manifest_entries:
     continue
   index = int(index_text)
   pbs_out = os.path.join(run_dir, "logs", f"all-recipes.{index:03d}.pbs.out")
+  pbs_outputs = sorted(glob.glob(pbs_out + "*"), key=os.path.getmtime, reverse=True)
+  pbs_out = pbs_outputs[0] if pbs_outputs else pbs_out
   reason = ""
   if os.path.exists(pbs_out):
     with open(pbs_out, encoding="utf-8", errors="replace") as handle:

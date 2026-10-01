@@ -108,7 +108,11 @@ jobs:
           if [[ -s .cache/all-recipes-summary/all-recipes-versions/analysis3-versions.json ]]; then
             args+=(--environments-json .cache/all-recipes-summary/all-recipes-versions/analysis3-versions.json)
           fi
-          python3 scripts/build_dashboard_data.py "${args[@]}"
+          if (( ${#args[@]} )); then
+            python3 scripts/build_dashboard_data.py "${args[@]}"
+          else
+            echo 'No new all-recipes artifact; using the checked-in dashboard data.'
+          fi
 
       - name: Configure Pages
         uses: actions/configure-pages@v6

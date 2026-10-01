@@ -64,6 +64,10 @@ class AllRecipesSummaryTests(unittest.TestCase):
                 "Job 1.gadi-pbs killed due to exceeding jobfs quota. Quota: 100MB, Used: 1GB\n",
                 encoding="utf-8",
             )
+            (run_dir / "logs" / "all-recipes.001.pbs.out.jobfs100").write_text(
+                "Job 2.gadi-pbs killed due to exceeding jobfs quota. Quota: 100GB, Used: 117GB\n",
+                encoding="utf-8",
+            )
             summary_path = run_dir / "results" / "all-recipes.summary.json"
             completed = subprocess.run(
                 ["bash", str(ROOT / "scripts/gadi_poll_cosima_all_recipes.sh"),
@@ -76,7 +80,7 @@ class AllRecipesSummaryTests(unittest.TestCase):
         self.assertEqual(summary["missing_count"], 1)
         self.assertEqual(summary["results"][0]["status"], "missing-result")
         self.assertEqual(summary["failure_types"], {"PBSJobKilled": 1})
-        self.assertIn("jobfs quota", summary["failed_notebooks"][0]["failure_summary"])
+        self.assertIn("Quota: 100GB", summary["failed_notebooks"][0]["failure_summary"])
 
     def test_job_summary_python_block_compiles(self) -> None:
         lines = (ROOT / ".github/workflows/cosima-all-recipes.yml").read_text(encoding="utf-8").splitlines()
