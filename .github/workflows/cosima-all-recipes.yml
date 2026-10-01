@@ -1,6 +1,9 @@
 name: COSIMA All Recipes
 
 on:
+  schedule:
+    # Monday 08:15 Australia/Brisbane (Sunday 22:15 UTC).
+    - cron: '15 22 * * 0'
   workflow_dispatch:
     inputs:
       recipes_ref:
@@ -18,12 +21,8 @@ on:
           - XLarge
           - XXLarge
           - XXLargeMem
-      conda_module:
-        description: 'Analysis environment module to load on Gadi'
-        required: true
-        default: 'conda/analysis3'
       module_base_path:
-        description: 'Module base path to add before loading conda_module'
+        description: 'Module base path containing the versioned analysis3 modules'
         required: true
         default: '/g/data/xp65/public/modules'
       poll_timeout_minutes:
@@ -41,16 +40,96 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 defaults:
   run:
     shell: bash
 
 jobs:
+  discover-versions:
+    name: Discover six newest analysis3 modules on Gadi
+    runs-on: ubuntu-latest
+    outputs:
+      versions: ${{ steps.versions.outputs.versions }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Configure SSH for Gadi
+        env:
+          GADI_KEY: ${{ secrets.GADI_KEY }}
+          GADI_KEY_PASSPHRASE: ${{ secrets.GADI_KEY_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          test -n "${{ secrets.GADI_USER }}" || { echo "GADI_USER secret is not configured" >&2; exit 2; }
+          test -n "$GADI_KEY" || { echo "GADI_KEY secret is not configured" >&2; exit 2; }
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$GADI_KEY" > ~/.ssh/gadi_key
+          chmod 600 ~/.ssh/gadi_key
+          ssh-keyscan -H gadi.nci.org.au >> ~/.ssh/known_hosts
+          eval "$(ssh-agent -s)"
+          if [[ -n "${GADI_KEY_PASSPHRASE:-}" ]]; then
+            ASKPASS=$(mktemp)
+            chmod 700 "$ASKPASS"
+            printf '#!/usr/bin/env bash\nprintf %%s "$GADI_KEY_PASSPHRASE"\n' > "$ASKPASS"
+            DISPLAY=:0 SSH_ASKPASS="$ASKPASS" SSH_ASKPASS_REQUIRE=force ssh-add ~/.ssh/gadi_key </dev/null
+            rm -f "$ASKPASS"
+          else
+            ssh-add ~/.ssh/gadi_key
+          fi
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> "$GITHUB_ENV"
+          echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> "$GITHUB_ENV"
+
+      - name: Check PBS project allocation
+        env:
+          GADI_USER: ${{ secrets.GADI_USER }}
+        run: |
+          set -euo pipefail
+          project=$(python3 -c 'import json; print(json.load(open(".github/configs/cosima-all-recipes.json"))["defaults"]["project"])')
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=yes "${GADI_USER}@gadi.nci.org.au" \
+            nci_account -P "$project" > allocation.txt
+          python3 scripts/check_gadi_allocation.py allocation.txt
+
+      - name: Select newest six versions
+        id: versions
+        env:
+          GADI_USER: ${{ secrets.GADI_USER }}
+          MODULE_BASE_PATH: ${{ inputs.module_base_path }}
+        run: |
+          set -euo pipefail
+          module_base_path="${MODULE_BASE_PATH:-/g/data/xp65/public/modules}"
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=yes "${GADI_USER}@gadi.nci.org.au" \
+            bash -s -- "$module_base_path" < scripts/gadi_list_analysis3_versions.sh > versions.txt
+          python3 - <<'PY'
+          import json
+          import os
+          import pathlib
+          import re
+
+          versions = pathlib.Path('versions.txt').read_text(encoding='utf-8').splitlines()
+          if len(versions) != 6 or len(set(versions)) != 6 or any(not re.fullmatch(r'\d{2}\.\d{2}', version) for version in versions):
+              raise SystemExit(f'Expected six distinct YY.MM versions; got {versions!r}')
+          pathlib.Path('analysis3-versions.json').write_text(json.dumps([f'conda/analysis3-{version}' for version in versions]) + '\n', encoding='utf-8')
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as handle:
+              print('versions=' + json.dumps(versions), file=handle)
+          PY
+
+      - name: Upload selected versions
+        uses: actions/upload-artifact@v7
+        with:
+          name: all-recipes-versions
+          path: analysis3-versions.json
+          if-no-files-found: error
+          retention-days: 30
+
   all-recipes:
-    name: Run all COSIMA notebooks on Gadi
+    name: Run COSIMA notebooks on analysis3-${{ matrix.version }}
+    needs: discover-versions
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        version: ${{ fromJSON(needs.discover-versions.outputs.versions) }}
     runs-on: ubuntu-latest
     timeout-minutes: 300
     steps:
@@ -61,7 +140,7 @@ jobs:
         env:
           RECIPES_REF: ${{ inputs.recipes_ref }}
           RESOURCE_PROFILE: ${{ inputs.resource_profile }}
-          CONDA_MODULE: ${{ inputs.conda_module }}
+          CONDA_MODULE: conda/analysis3-${{ matrix.version }}
           MODULE_BASE_PATH: ${{ inputs.module_base_path }}
           POLL_TIMEOUT_MINUTES: ${{ inputs.poll_timeout_minutes }}
           EXECUTE_TIMEOUT_SECONDS: ${{ inputs.execute_timeout_seconds }}
@@ -112,7 +191,7 @@ jobs:
           set -euo pipefail
           GADI_WORK_DIR="${GADI_WORK_DIR_INPUT:-$GADI_WORK_DIR_SECRET}"
           test -n "$GADI_WORK_DIR" || { echo "Provide gadi_work_dir or configure GADI_SCRIPTS_DIR secret" >&2; exit 2; }
-          RUN_DIR="${GADI_WORK_DIR%/}/cosima-recipes-ci/runs/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-all-recipes"
+          RUN_DIR="${GADI_WORK_DIR%/}/cosima-recipes-ci/runs/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-analysis3-${{ matrix.version }}"
           ssh_opts=(-o BatchMode=yes -o StrictHostKeyChecking=yes)
           ssh "${ssh_opts[@]}" "${GADI_USER}@gadi.nci.org.au" bash -s -- \
             "$RUN_DIR" \
@@ -128,6 +207,7 @@ jobs:
             '${{ steps.plan.outputs.memory }}' \
             '${{ steps.plan.outputs.ncpus }}' \
             '${{ steps.plan.outputs.storage }}' \
+            '${{ steps.plan.outputs.jobfs }}' \
             '${{ steps.plan.outputs.execute_timeout_seconds }}' \
             '${{ steps.plan.outputs.poll_interval_seconds }}' \
             < scripts/gadi_submit_cosima_all_recipes.sh | tee submit.json
@@ -205,7 +285,7 @@ jobs:
         if: always() && hashFiles('summary.json') != ''
         uses: actions/upload-artifact@v7
         with:
-          name: all-recipes-summary
+          name: all-recipes-summary-${{ matrix.version }}
           path: summary.json
           if-no-files-found: error
           retention-days: 30
@@ -222,6 +302,7 @@ jobs:
             echo "- Queue: \`${{ steps.plan.outputs.queue }}\`"
             echo "- CPUs: \`${{ steps.plan.outputs.ncpus }}\`"
             echo "- Memory: \`${{ steps.plan.outputs.memory }}\`"
+            echo "- JobFS: \`${{ steps.plan.outputs.jobfs }}\`"
             echo "- Walltime: \`${{ steps.plan.outputs.walltime }}\`"
             echo "- PBS job ID(s): \`${{ steps.submit.outputs.pbs_job_id }}\`"
             echo "- Status: **${status:-unknown}**"
@@ -239,32 +320,32 @@ jobs:
 
           if [[ -s summary.json ]]; then
           python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
-            import json
+          import json
 
-            with open('summary.json', encoding='utf-8') as handle:
-              data = json.load(handle)
+          with open('summary.json', encoding='utf-8') as handle:
+            data = json.load(handle)
 
-            failed = data.get('failed_notebooks') or []
-            if failed:
+          failed = data.get('failed_notebooks') or []
+          if failed:
+            print('')
+            print('### Failed Notebooks (Top 20)')
+            print('')
+            print('| Notebook | Exception | Message |')
+            print('|---|---|---|')
+            for item in failed[:20]:
+              notebook = str(item.get('notebook_path', 'unknown')).replace('|', '\\|')
+              etype = str(item.get('exception_type', '') or 'Unknown').replace('|', '\\|')
+              message = str(item.get('exception_message', '') or item.get('failure_summary', '') or '').replace('|', '\\|')
+              if len(message) > 180:
+                message = message[:177] + '...'
+              print(f'| `{notebook}` | `{etype}` | {message} |')
+
+            failure_types = data.get('failure_types') or {}
+            if failure_types:
               print('')
-              print('### Failed Notebooks (Top 20)')
-              print('')
-              print('| Notebook | Exception | Message |')
-              print('|---|---|---|')
-              for item in failed[:20]:
-                notebook = str(item.get('notebook_path', 'unknown')).replace('|', '\\|')
-                etype = str(item.get('exception_type', '') or 'Unknown').replace('|', '\\|')
-                message = str(item.get('exception_message', '') or item.get('failure_summary', '') or '').replace('|', '\\|')
-                if len(message) > 180:
-                  message = message[:177] + '...'
-                print(f'| `{notebook}` | `{etype}` | {message} |')
-
-              failure_types = data.get('failure_types') or {}
-              if failure_types:
-                print('')
-                print('Failure type counts:')
-                for key, value in failure_types.items():
-                  print(f'- `{key}`: {value}')
+              print('Failure type counts:')
+              for key, value in failure_types.items():
+                print(f'- `{key}`: {value}')
           PY
           fi
 
@@ -272,28 +353,3 @@ jobs:
             echo "All-recipes run did not pass: ${status:-unknown}" >&2
             exit 1
           fi
-
-      - name: Build dashboard data
-        if: always()
-        run: |
-          set -euo pipefail
-          args=()
-          if [[ -s summary.json ]]; then
-            args+=(--summary-json summary.json)
-          fi
-          python3 scripts/build_dashboard_data.py "${args[@]}"
-
-      - name: Configure Pages
-        if: always()
-        uses: actions/configure-pages@v6
-
-      - name: Upload dashboard artifact
-        if: always()
-        uses: actions/upload-pages-artifact@v5
-        with:
-          path: ./dashboard
-
-      - name: Deploy dashboard to GitHub Pages
-        if: always()
-        id: deployment
-        uses: actions/deploy-pages@v5

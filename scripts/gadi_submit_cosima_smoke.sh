@@ -111,16 +111,25 @@ cd "\$SOURCE_DIR" || exit 20
     # shellcheck disable=SC1091
     source /etc/profile >/dev/null 2>&1 || true
   fi
-  module use "\$MODULE_BASE_PATH"
-  module load "\$CONDA_MODULE"
-  module list
-  python --version
-  python -m jupyter nbconvert --to notebook --execute "\$NOTEBOOK_PATH" \
-    --ExecutePreprocessor.kernel_name=python3 \
-    --ExecutePreprocessor.timeout=1800 \
-    --output "\${SAFE_NAME}.executed.ipynb" \
-    --output-dir "\$RUN_DIR/outputs"
-  EXIT_CODE=\$?
+  module purge || EXIT_CODE=\$?
+  if [[ "\$EXIT_CODE" -eq 0 ]]; then
+    module use /opt/nci/modulefiles || EXIT_CODE=\$?
+  fi
+  if [[ "\$EXIT_CODE" -eq 0 ]]; then
+    module use "\$MODULE_BASE_PATH" || EXIT_CODE=\$?
+  fi
+  if [[ "\$EXIT_CODE" -eq 0 ]]; then
+    module load "\$CONDA_MODULE" || EXIT_CODE=\$?
+  fi
+  if [[ "\$EXIT_CODE" -eq 0 ]]; then
+    module list
+    python --version
+    python -m jupyter nbconvert --to notebook --execute "\$NOTEBOOK_PATH" \
+      --ExecutePreprocessor.kernel_name=python3 \
+      --ExecutePreprocessor.timeout=1800 \
+      --output "\${SAFE_NAME}.executed.ipynb" \
+      --output-dir "\$RUN_DIR/outputs" || EXIT_CODE=\$?
+  fi
 } > "\$RUN_DIR/logs/\${SAFE_NAME}.notebook.log" 2>&1 || EXIT_CODE=\$?
 
 END_EPOCH=\$(date +%s)

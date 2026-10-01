@@ -27,6 +27,7 @@ class BuildDashboardDataTests(unittest.TestCase):
             "queue": "normalbw",
             "walltime": "02:00:00",
             "memory": "32GB",
+            "jobfs": "100GB",
             "ncpus": 7,
             "conda_module": "conda/analysis3-26.04",
             "expected_count": 38,
@@ -54,16 +55,70 @@ class BuildDashboardDataTests(unittest.TestCase):
                 [str(summary_path)],
             )
 
-        self.assertEqual(data["default_environment"], "conda/analysis3")
-        self.assertIn("conda/analysis3-26.04", data["environments"])
+        self.assertEqual(data["default_environment"], "conda/analysis3-26.04")
+        self.assertEqual(data["environments"], ["conda/analysis3-26.04"])
         recipe = next(item for item in data["recipes"] if item["path"] == "02-Easy-Recipes/Barotropic_Streamfunction.ipynb")
         self.assertEqual(recipe["statuses"]["conda/analysis3-26.04"]["status"], "failed")
-        self.assertEqual(recipe["statuses"]["conda/analysis3"]["status"], "not-run")
         run = data["runs"][0]
         self.assertEqual(run["resource_profile"], "CLarge")
         self.assertEqual(run["queue"], "normalbw")
         self.assertEqual(run["memory"], "32GB")
+        self.assertEqual(run["jobfs"], "100GB")
         self.assertEqual(run["ncpus"], 7)
+
+    def test_discovered_notebooks_replace_stale_manifest_and_show_missing_results(self) -> None:
+        new_path = "03-Advanced-Recipes/Horizontal_Regridding_Compare_Resolutions.ipynb"
+        missing_path = "01-Cooking-Tutorials/02-Advanced/CFxarray_and_Pint.ipynb"
+        summary = {
+            "status": "missing-result",
+            "conda_module": "conda/analysis3",
+            "notebook_paths": [new_path, missing_path],
+            "results": [{"notebook_path": new_path, "status": "passed"}],
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            summary_path = Path(tmp) / "summary.json"
+            summary_path.write_text(json.dumps(summary), encoding="utf-8")
+            data = dashboard.build_dashboard(
+                Path(".github/configs/cosima-all-recipes.json"),
+                Path(".github/configs/cosima-all-recipes.yml"),
+                [str(summary_path)],
+            )
+
+        self.assertEqual([recipe["path"] for recipe in data["recipes"]], [new_path, missing_path])
+        self.assertEqual(data["recipes"][0]["statuses"]["conda/analysis3"]["status"], "passed")
+        self.assertEqual(data["recipes"][1]["statuses"]["conda/analysis3"]["status"], "missing-result")
+
+    def test_six_selected_versions_include_missing_summary(self) -> None:
+        modules = [f"conda/analysis3-26.{month:02d}" for month in range(5, 11)]
+        path = "02-Easy-Recipes/Barotropic_Streamfunction.ipynb"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            versions_path = root / "analysis3-versions.json"
+            versions_path.write_text(json.dumps(modules), encoding="utf-8")
+            summary_paths = []
+            for module, status in [(modules[0], "failed"), (modules[-1], "passed")]:
+                summary_path = root / f"{module.rsplit('-', 1)[-1]}.json"
+                summary_path.write_text(json.dumps({
+                    "conda_module": module,
+                    "status": status,
+                    "notebook_paths": [path],
+                    "results": [{"notebook_path": path, "status": status}],
+                }), encoding="utf-8")
+                summary_paths.append(str(summary_path))
+            data = dashboard.build_dashboard(
+                Path(".github/configs/cosima-all-recipes.json"),
+                Path(".github/configs/cosima-all-recipes.yml"),
+                summary_paths,
+                versions_path,
+            )
+
+        self.assertEqual(data["environments"], list(reversed(modules)))
+        self.assertEqual(data["default_environment"], modules[-1])
+        self.assertEqual(len(data["recipes"]), 1)
+        statuses = data["recipes"][0]["statuses"]
+        self.assertEqual(statuses[modules[-1]]["status"], "passed")
+        self.assertEqual(statuses[modules[0]]["status"], "failed")
+        self.assertEqual(statuses[modules[2]]["status"], "not-run")
 
 
 if __name__ == "__main__":

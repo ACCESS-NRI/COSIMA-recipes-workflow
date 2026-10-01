@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Build static dashboard data for COSIMA Recipes workflow results.
 
-The dashboard starts from the legacy recipe manifest and can be enriched with one
-or more all-recipes summary JSON files produced by the Gadi polling workflow.
+Use the discovered notebook list from the latest Gadi summary when available;
+fall back to the legacy manifest before the first run.
 """
 from __future__ import annotations
 
@@ -156,16 +156,25 @@ def load_summaries(patterns: list[str]) -> tuple[dict[str, dict[str, dict[str, A
         env = summary.get("conda_module") or DEFAULT_ENVIRONMENT
         environments.add(env)
         results = summary.get("results", [])
+        notebook_paths = summary.get("notebook_paths") or []
+        run_results: dict[str, dict[str, Any]] = {}
         for result in results:
             notebook_path = result.get("notebook_path")
             if notebook_path:
-                by_env[env][notebook_path] = normalise_result(result, summary)
+                run_results[notebook_path] = normalise_result(result, summary)
+        for notebook_path in notebook_paths:
+            if notebook_path not in run_results:
+                run_results[notebook_path] = normalise_result(
+                    {"status": "missing-result", "notebook_path": notebook_path}, summary
+                )
+        by_env[env] = run_results
         runs.append({
             "status": summary.get("status", "unknown"),
             "resource_profile": summary.get("resource_profile", ""),
             "queue": summary.get("queue", ""),
             "walltime": summary.get("walltime", ""),
             "memory": summary.get("memory", ""),
+            "jobfs": summary.get("jobfs", ""),
             "ncpus": summary.get("ncpus"),
             "conda_module": env,
             "recipes_ref": summary.get("recipes_ref", ""),
@@ -178,17 +187,58 @@ def load_summaries(patterns: list[str]) -> tuple[dict[str, dict[str, dict[str, A
             "failed_count": summary.get("failed_count"),
             "missing_count": summary.get("missing_count"),
             "generated_at": summary.get("generated_at", ""),
-            "source_file": path,
+            "notebook_paths": notebook_paths,
+            "source_file": summary.get("summary_json") or path,
         })
     return by_env, runs, environments
 
 
-def build_dashboard(defaults_path: Path, manifest_path: Path, summary_patterns: list[str]) -> dict[str, Any]:
+def environment_sort_key(environment: str) -> tuple[int, int, str]:
+    match = re.fullmatch(r"conda/analysis3-(\d{2})\.(\d{2})", environment)
+    return (int(match.group(1)), int(match.group(2)), environment) if match else (-1, -1, environment)
+
+
+def load_selected_environments(path: Path | None) -> list[str]:
+    if path is None:
+        return []
+    with path.open(encoding="utf-8") as handle:
+        environments = json.load(handle)
+    if not isinstance(environments, list) or len(environments) != 6 or any(
+        not isinstance(env, str) or not re.fullmatch(r"conda/analysis3-\d{2}\.\d{2}", env)
+        for env in environments
+    ) or len(environments) != len(set(environments)):
+        raise ValueError("environments JSON must list six distinct versioned analysis3 modules")
+    return sorted(environments, key=environment_sort_key, reverse=True)
+
+
+def build_dashboard(
+    defaults_path: Path,
+    manifest_path: Path,
+    summary_patterns: list[str],
+    environments_path: Path | None = None,
+) -> dict[str, Any]:
     defaults = load_defaults(defaults_path)
     recipes = parse_recipe_manifest(manifest_path)
     by_env, runs, result_envs = load_summaries(summary_patterns)
-    default_env = defaults.get("conda_module", DEFAULT_ENVIRONMENT)
-    environments = sorted({default_env, *result_envs})
+    selected_environments = load_selected_environments(environments_path)
+    if selected_environments:
+        runs = [run for run in runs if run["conda_module"] in selected_environments]
+    catalogue_run = next((run for run in sorted(
+        runs, key=lambda run: environment_sort_key(run["conda_module"]), reverse=True
+    ) if run["notebook_paths"]), None)
+    if catalogue_run:
+        recipes = [{"path": path, "enabled": True} for path in catalogue_run["notebook_paths"]]
+    else:
+        known_paths = {str(entry.get("path", "")) for entry in recipes}
+        for results in by_env.values():
+            for path in results:
+                if path not in known_paths:
+                    recipes.append({"path": path, "enabled": True})
+                    known_paths.add(path)
+    environments = selected_environments or sorted(result_envs, key=environment_sort_key, reverse=True)
+    if not environments:
+        environments = [defaults.get("conda_module", DEFAULT_ENVIRONMENT)]
+    default_env = environments[0]
 
     recipe_rows = []
     env_counts: dict[str, Counter[str]] = {env: Counter() for env in environments}
@@ -227,8 +277,9 @@ def build_dashboard(defaults_path: Path, manifest_path: Path, summary_patterns: 
         "views": ["overview", "cards", "table", "detail"],
         "assumptions": [
             "Recipe style is inferred from the top-level COSIMA Recipes folder.",
-            "Recipes without an imported all-recipes summary are shown as not-run for that analysis3 environment.",
-            "The analysis3 environment selector is populated from workflow defaults and any summary JSON files used to build this data.",
+            "The newest selected version's discovered notebook list defines the recipe catalogue when available; otherwise the legacy manifest is used.",
+            "Recipes without an imported result are shown as not-run, or missing-result when the run's notebook list includes them.",
+            "The analysis3 environment selector is populated from the selected version list, or from imported summaries when that list is unavailable.",
         ],
         "summary": {
             "recipe_count": len(recipe_rows),
@@ -245,10 +296,14 @@ def main() -> None:
     parser.add_argument("--defaults", default=".github/configs/cosima-all-recipes.json")
     parser.add_argument("--manifest", default=".github/configs/cosima-all-recipes.yml")
     parser.add_argument("--summary-json", action="append", default=[], help="Summary JSON path or glob. Can be repeated.")
+    parser.add_argument("--environments-json", help="JSON list of selected analysis3 modules from the discovery job.")
     parser.add_argument("--out", default="dashboard/dashboard-data.json")
     args = parser.parse_args()
 
-    data = build_dashboard(Path(args.defaults), Path(args.manifest), args.summary_json)
+    data = build_dashboard(
+        Path(args.defaults), Path(args.manifest), args.summary_json,
+        Path(args.environments_json) if args.environments_json else None,
+    )
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")

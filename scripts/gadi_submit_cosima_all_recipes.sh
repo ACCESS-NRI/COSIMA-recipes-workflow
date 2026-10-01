@@ -2,8 +2,8 @@
 # Submit all COSIMA Recipes notebooks to PBS on Gadi as single jobs.
 set -euo pipefail
 
-if [[ $# -ne 15 ]]; then
-  echo "usage: $0 RUN_DIR REPO_URL RECIPES_REF RESOURCE_PROFILE NOTEBOOK_ROOTS CONDA_MODULE MODULE_BASE_PATH PROJECT QUEUE WALLTIME MEMORY NCPUS STORAGE EXECUTE_TIMEOUT_SECONDS POLL_INTERVAL_SECONDS" >&2
+if [[ $# -ne 16 ]]; then
+  echo "usage: $0 RUN_DIR REPO_URL RECIPES_REF RESOURCE_PROFILE NOTEBOOK_ROOTS CONDA_MODULE MODULE_BASE_PATH PROJECT QUEUE WALLTIME MEMORY NCPUS STORAGE JOBFS EXECUTE_TIMEOUT_SECONDS POLL_INTERVAL_SECONDS" >&2
   exit 2
 fi
 
@@ -20,8 +20,9 @@ WALLTIME=${10}
 MEMORY=${11}
 NCPUS=${12}
 STORAGE=${13}
-EXECUTE_TIMEOUT_SECONDS=${14}
-POLL_INTERVAL_SECONDS=${15}
+JOBFS=${14}
+EXECUTE_TIMEOUT_SECONDS=${15}
+POLL_INTERVAL_SECONDS=${16}
 
 case "$NOTEBOOK_ROOTS" in
   /*|*..*) echo "unsafe notebook roots: $NOTEBOOK_ROOTS" >&2; exit 2 ;;
@@ -113,6 +114,7 @@ write_pbs_script() {
 #PBS -q $QUEUE
 #PBS -l walltime=$WALLTIME
 #PBS -l mem=$MEMORY
+#PBS -l jobfs=$JOBFS
 #PBS -l ncpus=$NCPUS
 #PBS -l storage=$STORAGE
 #PBS -l wd
@@ -131,6 +133,7 @@ RESOURCE_PROFILE="$RESOURCE_PROFILE"
 QUEUE="$QUEUE"
 WALLTIME="$WALLTIME"
 MEMORY="$MEMORY"
+JOBFS="$JOBFS"
 NCPUS="$NCPUS"
 COMMIT="$COMMIT"
 EXECUTE_TIMEOUT_SECONDS="$EXECUTE_TIMEOUT_SECONDS"
@@ -161,16 +164,25 @@ cd "\$SOURCE_DIR" || exit 20
     # shellcheck disable=SC1091
     source /etc/profile >/dev/null 2>&1 || true
   fi
-  module use "\$MODULE_BASE_PATH"
-  module load "\$CONDA_MODULE"
-  module list
-  python --version
-  python -m jupyter nbconvert --to notebook --execute "\$NOTEBOOK_PATH" \
-    --ExecutePreprocessor.kernel_name=python3 \
-    --ExecutePreprocessor.timeout="\$EXECUTE_TIMEOUT_SECONDS" \
-    --output "\$(basename "\$EXECUTED_NOTEBOOK")" \
-    --output-dir "\$(dirname "\$EXECUTED_NOTEBOOK")"
-  EXIT_CODE=\$?
+  module purge || EXIT_CODE=\$?
+  if [[ "\$EXIT_CODE" -eq 0 ]]; then
+    module use /opt/nci/modulefiles || EXIT_CODE=\$?
+  fi
+  if [[ "\$EXIT_CODE" -eq 0 ]]; then
+    module use "\$MODULE_BASE_PATH" || EXIT_CODE=\$?
+  fi
+  if [[ "\$EXIT_CODE" -eq 0 ]]; then
+    module load "\$CONDA_MODULE" || EXIT_CODE=\$?
+  fi
+  if [[ "\$EXIT_CODE" -eq 0 ]]; then
+    module list
+    python --version
+    python -m jupyter nbconvert --to notebook --execute "\$NOTEBOOK_PATH" \
+      --ExecutePreprocessor.kernel_name=python3 \
+      --ExecutePreprocessor.timeout="\$EXECUTE_TIMEOUT_SECONDS" \
+      --output "\$(basename "\$EXECUTED_NOTEBOOK")" \
+      --output-dir "\$(dirname "\$EXECUTED_NOTEBOOK")" || EXIT_CODE=\$?
+  fi
 } > "\$LOG_PATH" 2>&1 || EXIT_CODE=\$?
 
 END_EPOCH=\$(date +%s)
@@ -183,7 +195,7 @@ fi
 STATUS="\$STATUS" EXIT_CODE="\$EXIT_CODE" START_EPOCH="\$START_EPOCH" END_EPOCH="\$END_EPOCH" \
   RUN_DIR="\$RUN_DIR" NOTEBOOK_PATH="\$NOTEBOOK_PATH" SAFE_NAME="\$SAFE_NAME" COMMIT="\$COMMIT" \
   INDEX="\$INDEX" JOB_ID="\${PBS_JOBID:-unknown}" CONDA_MODULE="\$CONDA_MODULE" \
-  MODULE_BASE_PATH="\$MODULE_BASE_PATH" RESOURCE_PROFILE="\$RESOURCE_PROFILE" QUEUE="\$QUEUE" WALLTIME="\$WALLTIME" MEMORY="\$MEMORY" NCPUS="\$NCPUS" LOG_PATH="\$LOG_PATH" EXECUTED_NOTEBOOK="\$EXECUTED_NOTEBOOK" RESULT_JSON="\$RESULT_JSON" \
+  MODULE_BASE_PATH="\$MODULE_BASE_PATH" RESOURCE_PROFILE="\$RESOURCE_PROFILE" QUEUE="\$QUEUE" WALLTIME="\$WALLTIME" MEMORY="\$MEMORY" JOBFS="\$JOBFS" NCPUS="\$NCPUS" LOG_PATH="\$LOG_PATH" EXECUTED_NOTEBOOK="\$EXECUTED_NOTEBOOK" RESULT_JSON="\$RESULT_JSON" \
   python3 - <<'PY'
 import json, os
 start = int(os.environ["START_EPOCH"])
@@ -200,6 +212,7 @@ result = {
     "queue": os.environ["QUEUE"],
     "walltime": os.environ["WALLTIME"],
     "memory": os.environ["MEMORY"],
+    "jobfs": os.environ["JOBFS"],
     "ncpus": int(os.environ["NCPUS"]),
     "conda_module": os.environ["CONDA_MODULE"],
     "module_base_path": os.environ["MODULE_BASE_PATH"],
@@ -265,7 +278,7 @@ JOB_ID_CSV=$(IFS=,; echo "${job_ids[*]}")
 PBS_SCRIPT_CSV=$(IFS=,; echo "${scripts[*]}")
 
 JOB_ID="$JOB_ID_CSV" RUN_DIR="$RUN_DIR" COMMIT="$COMMIT" NOTEBOOK_COUNT="$NOTEBOOK_COUNT" NOTEBOOK_ROOTS="$NOTEBOOK_ROOTS" \
-  CONDA_MODULE="$CONDA_MODULE" MODULE_BASE_PATH="$MODULE_BASE_PATH" RESOURCE_PROFILE="$RESOURCE_PROFILE" QUEUE="$QUEUE" WALLTIME="$WALLTIME" MEMORY="$MEMORY" NCPUS="$NCPUS" SUMMARY_JSON="$SUMMARY_JSON" PBS_SCRIPT="$PBS_SCRIPT_CSV" MANIFEST="$MANIFEST" \
+  CONDA_MODULE="$CONDA_MODULE" MODULE_BASE_PATH="$MODULE_BASE_PATH" RESOURCE_PROFILE="$RESOURCE_PROFILE" QUEUE="$QUEUE" WALLTIME="$WALLTIME" MEMORY="$MEMORY" JOBFS="$JOBFS" NCPUS="$NCPUS" SUMMARY_JSON="$SUMMARY_JSON" PBS_SCRIPT="$PBS_SCRIPT_CSV" MANIFEST="$MANIFEST" \
   POLL_INTERVAL_SECONDS="$POLL_INTERVAL_SECONDS" EXECUTE_TIMEOUT_SECONDS="$EXECUTE_TIMEOUT_SECONDS" \
   python3 - <<'PY'
 import json, os
@@ -280,6 +293,7 @@ submitted = {
     "queue": os.environ["QUEUE"],
     "walltime": os.environ["WALLTIME"],
     "memory": os.environ["MEMORY"],
+    "jobfs": os.environ["JOBFS"],
     "ncpus": int(os.environ["NCPUS"]),
     "conda_module": os.environ["CONDA_MODULE"],
     "module_base_path": os.environ["MODULE_BASE_PATH"],

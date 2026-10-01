@@ -98,6 +98,7 @@ def main() -> None:
     require_safe_value("queue", planned["queue"])
     require_safe_value("walltime", planned["walltime"], SAFE_WALLTIME)
     require_safe_value("memory", planned["memory"], SAFE_RESOURCE)
+    require_safe_value("jobfs", planned["jobfs"], SAFE_RESOURCE)
     require_safe_value("storage", planned["storage"], SAFE_RESOURCE)
     require_safe_value("conda_module", planned["conda_module"])
     require_safe_value("module_base_path", planned["module_base_path"])
@@ -119,7 +120,7 @@ def main() -> None:
         with open(output_path, "a", encoding="utf-8") as handle:
             for key in [
                 "repository_url", "recipes_ref", "resource_profile", "project", "queue", "walltime", "memory",
-                "storage", "conda_module", "module_base_path", "poll_interval_seconds",
+                "storage", "jobfs", "conda_module", "module_base_path", "poll_interval_seconds",
                 "poll_timeout_minutes", "ncpus", "execute_timeout_seconds", "notebook_roots_arg",
             ]:
                 handle.write(f"{key}={planned[key]}\n")
