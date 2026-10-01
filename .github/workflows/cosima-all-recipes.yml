@@ -88,20 +88,7 @@ jobs:
           project=$(python3 -c 'import json; print(json.load(open(".github/configs/cosima-all-recipes.json"))["defaults"]["project"])')
           ssh -o BatchMode=yes -o StrictHostKeyChecking=yes "${GADI_USER}@gadi.nci.org.au" \
             nci_account -P "$project" > allocation.txt
-          python3 - <<'PY'
-          from decimal import Decimal
-          from pathlib import Path
-          import re
-
-          report = Path('allocation.txt').read_text(encoding='utf-8')
-          match = re.search(r'^\s*Avail:\s*([\d,]+(?:\.\d+)?)\s+SU\s*$', report, re.MULTILINE)
-          if not match:
-              raise SystemExit('Could not read available service units from nci_account output')
-          available = Decimal(match.group(1).replace(',', ''))
-          if available <= 0:
-              raise SystemExit('No service units available for the configured PBS project; skipping notebook submissions')
-          print(f'Available service units: {available}')
-          PY
+          python3 scripts/check_gadi_allocation.py allocation.txt
 
       - name: Select newest six versions
         id: versions

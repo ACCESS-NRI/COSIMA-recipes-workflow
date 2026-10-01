@@ -161,7 +161,10 @@ cd "\$SOURCE_DIR" || exit 20
     # shellcheck disable=SC1091
     source /etc/profile >/dev/null 2>&1 || true
   fi
-  module use /opt/nci/modulefiles || EXIT_CODE=\$?
+  module purge || EXIT_CODE=\$?
+  if [[ "\$EXIT_CODE" -eq 0 ]]; then
+    module use /opt/nci/modulefiles || EXIT_CODE=\$?
+  fi
   if [[ "\$EXIT_CODE" -eq 0 ]]; then
     module use "\$MODULE_BASE_PATH" || EXIT_CODE=\$?
   fi
