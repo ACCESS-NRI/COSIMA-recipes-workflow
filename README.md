@@ -1,34 +1,55 @@
-# ACCESS-NRI MED COSIMA-recipes Workflow
+# COSIMA Recipes CI and dashboard
 
-ACCESS-NRI maintenance workflows for testing COSIMA Recipes on NCI Gadi.
+An ACCESS-NRI alpha prototype that runs [COSIMA Recipes](https://github.com/COSIMA/cosima-recipes)
+notebooks on NCI Gadi and publishes the results in a
+[dashboard](https://access-nri.github.io/COSIMA-recipes-workflow/). It is intended
+to make recipe failures and differences between `analysis3` releases easier to
+spot and discuss.
 
+Every Monday at 08:15 Brisbane time, the all-recipes workflow discovers the six
+newest versioned `analysis3` modules available on Gadi and tests every notebook
+in the four recipe directories listed below. The selection updates automatically
+as new modules appear. The workflow can also be run manually. An initial direct
+Gadi run tested 38 notebooks across six versions; see the
+[validation report](reports/2026-10-01-gadi-validation.md) for its results and
+limits.
 
 ## Dashboard
 
-A GitHub Pages static dashboard is available at:
+Open the [COSIMA Recipes dashboard](https://access-nri.github.io/COSIMA-recipes-workflow/)
+to inspect results:
 
-- <https://access-nri.github.io/COSIMA-recipes-workflow/>
+- Choose an `analysis3` environment to see its results. The selector shows the
+  six versions chosen for the latest imported run.
+- Use the search box and Overview, Recipe Cards, or Table view to find a
+  notebook. The Overview shows all discovered notebooks, not just a sample.
+- Failed, timed-out, and missing results show a short error or PBS termination
+  reason when one was captured. The Table view also shows the log path on Gadi.
+- Select a recipe card to open the source notebook in COSIMA Recipes at the
+  tested commit when that information is available. Use Run Detail to check
+  the run's resources and result counts.
 
-Before the first run, the dashboard uses the legacy COSIMA all-recipes manifest.
-After a run, it uses the notebook paths discovered on Gadi and the run summary
-JSON, including failed and missing results. It shows per-recipe status, inferred recipe
-style/category, an `analysis3` environment selector, and switchable overview,
-cards, table, and run-detail views.
+The dashboard is read-only. It displays brief failure reasons, but it does not
+host the full execution logs or executed notebooks. For more detail, use the
+path in the Table view to read the log on Gadi. Run directories also contain
+result JSON and any executed notebooks that were produced. A failed status can
+reflect a notebook, input data, environment, resource limit, or infrastructure
+problem, so check the error before treating it as a recipe regression.
 
-The dashboard deployment workflow runs when an all-recipes workflow completes.
-It downloads the run's six version-specific summary artifacts, including failed
-jobs, and its selected-version artifact. The environment selector shows the six
-modules selected for that run; a version without a summary is shown as not run.
-Manual and push-triggered deployments use the latest completed run with an
-unexpired summary artifact.
-Until the first GitHub Actions all-recipes run produces artifacts, the checked-in
-dashboard data shows the [1 October 2026 Gadi validation](reports/2026-10-01-gadi-validation.md).
+The dashboard deployment runs after an all-recipes workflow finishes and imports
+its available per-version summary artifacts, including failed runs. A selected
+version without a summary is shown as *Not run*. Manual and push-triggered
+deployments use the latest completed run with unexpired summary artifacts.
+Until a GitHub Actions all-recipes run produces artifacts, the checked-in data
+shows the [1 October 2026 Gadi validation](reports/2026-10-01-gadi-validation.md).
 
 ## Workflows
 
 ### Smoke test
 
-`.github/workflows/cosima-recipe.yml` is manually dispatched and runs one manifest-listed notebook on Gadi via PBS:
+The [smoke-test workflow](.github/workflows/cosima-recipe.yml) can be started
+manually from the GitHub Actions tab. By default it runs this notebook on Gadi
+via PBS:
 
 - `02-Easy-Recipes/Barotropic_Streamfunction.ipynb`
 
@@ -43,12 +64,14 @@ The workflow:
 
 ### All recipes
 
-`.github/workflows/cosima-all-recipes.yml` runs every Monday at 08:15
-Australia/Brisbane time (Sunday 22:15 UTC), and can also be dispatched manually.
-At the start of each run it discovers the six newest versioned `analysis3` modules
-on Gadi. New releases enter the next run automatically and the oldest selected
-version drops out. It tests every notebook found under the COSIMA Recipes recipe
-roots configured in `.github/configs/cosima-all-recipes.json`:
+The [all-recipes workflow](.github/workflows/cosima-all-recipes.yml) runs every
+Monday at 08:15 Australia/Brisbane time (Sunday 22:15 UTC). To run it sooner,
+open **Actions → COSIMA All Recipes → Run workflow**. Its defaults test the
+`main` branch of COSIMA Recipes on Gadi project `tm70` with the `XLarge`
+resource profile. Each run selects the six newest `analysis3-YY.MM` modules;
+new releases enter the next run and the oldest selected version drops out. It
+discovers every `.ipynb` file under the roots configured in
+[cosima-all-recipes.json](.github/configs/cosima-all-recipes.json):
 
 - `01-Cooking-Tutorials`
 - `02-Easy-Recipes`
@@ -64,14 +87,15 @@ The workflow:
 5. Clones/fetches `COSIMA/cosima-recipes` and checks out the requested ref.
 6. Discovers all `.ipynb` files under the configured recipe roots and writes a tab-separated notebook manifest.
 7. Submits one PBS job per notebook and version with 100 GB of job-local scratch (`jobfs`). Each job runs `jupyter nbconvert --execute`, writes a per-notebook log, executed notebook, and result JSON.
-8. Polls until every notebook has a result JSON, then writes an aggregate summary JSON for that version and fails its GitHub Actions job if any notebook failed, timed out, or did not produce a result.
+8. Polls for results or timeout, writes an aggregate summary JSON for each version, and fails that version's GitHub Actions job if a notebook failed, timed out, or did not produce a result.
 
 Useful workflow inputs:
 
 - `recipes_ref`: COSIMA Recipes branch, tag, or SHA to test.
-- `resource_profile`: one of `Medium`, `Large`, `XLarge`, `XXLarge`, or `XXLargeMem`.
-- all profiles run on `normalbw` with fixed CPU/memory presets: `Medium` (4 CPUs, 18GB), `Large` (7 CPUs, 32GB), `XLarge` (14 CPUs, 63GB), `XXLarge` (28 CPUs, 126GB), `XXLargeMem` (28 CPUs, 252GB).
-- default profile is `XLarge`.
+- `resource_profile`: `Medium` (4 CPUs, 18 GB), `Large` (7 CPUs, 32 GB),
+  `XLarge` (14 CPUs, 63 GB; default), `XXLarge` (28 CPUs, 126 GB), or
+  `XXLargeMem` (28 CPUs, 252 GB). All use the `normalbw` queue.
+- `module_base_path`: Gadi directory containing the versioned modules.
 - `poll_timeout_minutes`: how long GitHub Actions should wait for all submitted PBS jobs.
 - `execute_timeout_seconds`: per-notebook `nbconvert` timeout.
 - `gadi_work_dir`: optional override for the Gadi base run directory.
