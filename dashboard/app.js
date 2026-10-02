@@ -35,6 +35,11 @@ function selectedStatus(recipe) {
   return recipe.statuses?.[state.environment] || { status: "not-run" };
 }
 
+function failureReason(status) {
+  if (!["failed", "timeout", "missing-result", "incomplete", "invalid-result"].includes(status.status)) return "";
+  return status.failure_summary || [status.exception_type, status.exception_message].filter(Boolean).join(": ") || "No error message captured.";
+}
+
 function filteredRecipes() {
   const q = state.filter.trim().toLowerCase();
   const recipes = state.data.recipes || [];
@@ -77,11 +82,13 @@ function recipeCard(recipe) {
   const status = selectedStatus(recipe);
   const duration = status.duration_seconds ? `${Math.round(status.duration_seconds / 60)} min` : "—";
   const href = notebookUrl(recipe);
+  const failure = failureReason(status);
   return `<a class="recipe-card-link" href="${esc(href)}" aria-label="Open ${esc(recipe.title)} notebook in COSIMA Recipes" title="Open notebook in COSIMA Recipes">
     <article class="recipe-card style-${esc(recipe.style)}">
       <h3>${esc(recipe.title)}</h3>
       <div class="recipe-path">${esc(recipe.path)}</div>
       <div class="recipe-meta">${statusBadge(status.status)}<span class="chip">${esc(recipe.style_label)}</span><span class="chip">${esc(duration)}</span></div>
+      ${failure ? `<p class="failure-reason"><strong>Failure:</strong> ${esc(failure)}</p>` : ""}
       <p class="muted">${esc(recipe.style_description)}</p>
     </article>
   </a>`;
@@ -99,11 +106,12 @@ function renderCards() {
 
 function renderTable() {
   const recipes = filteredRecipes();
-  return `<h2 class="view-title">Recipe table</h2><p class="view-sub">Sortable by source manifest order. Filter with the search box above.</p><table class="recipe-table"><thead><tr><th>Recipe</th><th class="hide-small">Path</th><th>Style</th><th>Status</th><th class="hide-small">Duration</th><th class="hide-small">Log</th></tr></thead><tbody>${recipes.map(recipe => {
+  return `<h2 class="view-title">Recipe table</h2><p class="view-sub">Sortable by source manifest order. Filter with the search box above.</p><table class="recipe-table"><thead><tr><th>Recipe</th><th class="hide-small">Path</th><th>Style</th><th>Status</th><th>Failure reason</th><th class="hide-small">Duration</th><th class="hide-small">Log</th></tr></thead><tbody>${recipes.map(recipe => {
     const status = selectedStatus(recipe);
     const duration = status.duration_seconds ? `${status.duration_seconds}s` : "—";
     const log = status.log_path ? `<code>${esc(status.log_path)}</code>` : "—";
-    return `<tr><td><strong>${esc(recipe.title)}</strong></td><td class="hide-small"><code>${esc(recipe.path)}</code></td><td>${esc(recipe.style_label)}</td><td>${statusBadge(status.status)}</td><td class="hide-small">${esc(duration)}</td><td class="hide-small">${log}</td></tr>`;
+    const failure = failureReason(status);
+    return `<tr><td><strong>${esc(recipe.title)}</strong></td><td class="hide-small"><code>${esc(recipe.path)}</code></td><td>${esc(recipe.style_label)}</td><td>${statusBadge(status.status)}</td><td>${failure ? `<span class="table-failure-reason">${esc(failure)}</span>` : "—"}</td><td class="hide-small">${esc(duration)}</td><td class="hide-small">${log}</td></tr>`;
   }).join("")}</tbody></table>`;
 }
 
