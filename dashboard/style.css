@@ -80,6 +80,8 @@ footer { border-top: 1px solid var(--border); text-align: center; padding: .65re
 .status-submitted { background: #dff0fb; border: 1px solid var(--blue); color: #0d5b90; }
 .status-not-run { background: #e5e7eb; border: 1px dashed var(--border); color: #475569; }
 .status-disabled { background: #cfd4da; border: 1px solid var(--grey); color: #111827; }
+.failure-reason { padding: .55rem .7rem; border-left: 3px solid var(--red); border-radius: 4px; background: #fff4f2; font-size: .8rem; line-height: 1.45; overflow-wrap: anywhere; }
+.table-failure-reason { display: block; max-width: 32rem; line-height: 1.45; overflow-wrap: anywhere; }
 .muted { color: var(--text-muted); }
 .recipe-table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: 0 12px 24px rgba(23,63,95,.07); }
 .recipe-table th, .recipe-table td { padding: .68rem .75rem; border-bottom: 1px solid #d7e8f2; text-align: left; vertical-align: top; }

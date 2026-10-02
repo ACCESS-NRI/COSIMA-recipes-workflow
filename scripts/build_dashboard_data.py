@@ -122,7 +122,7 @@ def load_defaults(path: Path) -> dict[str, Any]:
 
 def normalise_result(result: dict[str, Any], summary: dict[str, Any]) -> dict[str, Any]:
     status = result.get("status") or "unknown"
-    return {
+    normalised = {
         "status": status,
         "exit_code": result.get("exit_code"),
         "duration_seconds": result.get("duration_seconds"),
@@ -137,6 +137,10 @@ def normalise_result(result: dict[str, Any], summary: dict[str, Any]) -> dict[st
         "summary_json": summary.get("summary_json", ""),
         "last_updated": summary.get("generated_at") or datetime.now(timezone.utc).isoformat(),
     }
+    for key in ("exception_type", "exception_message", "failure_summary"):
+        if result.get(key):
+            normalised[key] = result[key]
+    return normalised
 
 
 def load_summaries(patterns: list[str]) -> tuple[dict[str, dict[str, dict[str, Any]]], list[dict[str, Any]], set[str]]:
@@ -167,6 +171,12 @@ def load_summaries(patterns: list[str]) -> tuple[dict[str, dict[str, dict[str, A
                 run_results[notebook_path] = normalise_result(
                     {"status": "missing-result", "notebook_path": notebook_path}, summary
                 )
+        for failure in summary.get("failed_notebooks", []):
+            result = run_results.get(failure.get("notebook_path"))
+            if result and result["status"] != "passed":
+                for key in ("exception_type", "exception_message", "failure_summary"):
+                    if failure.get(key):
+                        result[key] = failure[key]
         by_env[env] = run_results
         runs.append({
             "status": summary.get("status", "unknown"),

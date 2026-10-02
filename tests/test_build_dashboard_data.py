@@ -45,6 +45,12 @@ class BuildDashboardDataTests(unittest.TestCase):
                     "duration_seconds": 42,
                 }
             ],
+            "failed_notebooks": [{
+                "notebook_path": "02-Easy-Recipes/Barotropic_Streamfunction.ipynb",
+                "exception_type": "ValueError",
+                "exception_message": "sample failure",
+                "failure_summary": "ValueError: sample failure",
+            }],
         }
         with tempfile.TemporaryDirectory() as tmp:
             summary_path = Path(tmp) / "summary.json"
@@ -59,6 +65,7 @@ class BuildDashboardDataTests(unittest.TestCase):
         self.assertEqual(data["environments"], ["conda/analysis3-26.04"])
         recipe = next(item for item in data["recipes"] if item["path"] == "02-Easy-Recipes/Barotropic_Streamfunction.ipynb")
         self.assertEqual(recipe["statuses"]["conda/analysis3-26.04"]["status"], "failed")
+        self.assertEqual(recipe["statuses"]["conda/analysis3-26.04"]["failure_summary"], "ValueError: sample failure")
         run = data["runs"][0]
         self.assertEqual(run["resource_profile"], "CLarge")
         self.assertEqual(run["queue"], "normalbw")
@@ -74,6 +81,12 @@ class BuildDashboardDataTests(unittest.TestCase):
             "conda_module": "conda/analysis3",
             "notebook_paths": [new_path, missing_path],
             "results": [{"notebook_path": new_path, "status": "passed"}],
+            "failed_notebooks": [{
+                "notebook_path": missing_path,
+                "exception_type": "PBSJobKilled",
+                "exception_message": "jobfs limit exceeded",
+                "failure_summary": "jobfs limit exceeded",
+            }],
         }
         with tempfile.TemporaryDirectory() as tmp:
             summary_path = Path(tmp) / "summary.json"
@@ -87,6 +100,7 @@ class BuildDashboardDataTests(unittest.TestCase):
         self.assertEqual([recipe["path"] for recipe in data["recipes"]], [new_path, missing_path])
         self.assertEqual(data["recipes"][0]["statuses"]["conda/analysis3"]["status"], "passed")
         self.assertEqual(data["recipes"][1]["statuses"]["conda/analysis3"]["status"], "missing-result")
+        self.assertEqual(data["recipes"][1]["statuses"]["conda/analysis3"]["failure_summary"], "jobfs limit exceeded")
 
     def test_six_selected_versions_include_missing_summary(self) -> None:
         modules = [f"conda/analysis3-26.{month:02d}" for month in range(5, 11)]
