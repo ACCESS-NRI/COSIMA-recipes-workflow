@@ -10,6 +10,10 @@ fi
 RUN_DIR=$1
 REPO_URL=$2
 RECIPES_REF=$3
+if [[ ! "$RECIPES_REF" =~ ^[0-9a-f]{40}$ ]]; then
+  echo "recipes ref must be a full lowercase 40-character commit SHA" >&2
+  exit 2
+fi
 NOTEBOOK_PATH=$4
 CONDA_MODULE=$5
 MODULE_BASE_PATH=$6
@@ -56,7 +60,7 @@ if [[ ! -d "$SOURCE_DIR/.git" ]]; then
   fi
   CLONE_TMP=$(mktemp -d "$RUN_DIR/source.tmp.XXXXXX")
   trap 'rm -rf "${CLONE_TMP:-}"' EXIT
-  if ! git clone --filter=blob:none "$REPO_URL" "$CLONE_TMP" >&2; then
+  if ! git clone --filter=blob:none --no-checkout --depth=1 "$REPO_URL" "$CLONE_TMP" >&2; then
     echo "git clone failed in temporary source directory: $CLONE_TMP" >&2
     diagnose_path "$RUN_DIR"
     exit 4
@@ -67,6 +71,10 @@ fi
 git -C "$SOURCE_DIR" fetch --depth=1 origin "$RECIPES_REF" >&2
 git -C "$SOURCE_DIR" checkout --detach FETCH_HEAD >&2
 COMMIT=$(git -C "$SOURCE_DIR" rev-parse HEAD)
+if [[ "$COMMIT" != "$RECIPES_REF" ]]; then
+  echo "checked-out commit $COMMIT does not match pinned commit $RECIPES_REF" >&2
+  exit 3
+fi
 
 if [[ ! -f "$SOURCE_DIR/$NOTEBOOK_PATH" ]]; then
   echo "notebook not found after checkout: $NOTEBOOK_PATH" >&2

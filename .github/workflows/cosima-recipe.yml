@@ -7,10 +7,6 @@ on:
         description: 'Manifest notebook path to run'
         required: true
         default: '02-Easy-Recipes/Barotropic_Streamfunction.ipynb'
-      recipes_ref:
-        description: 'COSIMA/cosima-recipes branch, tag, or SHA to test'
-        required: true
-        default: 'main'
       conda_module:
         description: 'Analysis environment module to load on Gadi'
         required: true
@@ -47,7 +43,6 @@ jobs:
         id: plan
         env:
           NOTEBOOK_PATH: ${{ inputs.notebook_path }}
-          RECIPES_REF: ${{ inputs.recipes_ref }}
           CONDA_MODULE: ${{ inputs.conda_module }}
           MODULE_BASE_PATH: ${{ inputs.module_base_path }}
           POLL_TIMEOUT_MINUTES: ${{ inputs.poll_timeout_minutes }}
@@ -55,7 +50,6 @@ jobs:
           python3 scripts/plan_cosima_smoke.py \
             --manifest .github/configs/cosima-smoke.json \
             --notebook-path "$NOTEBOOK_PATH" \
-            --recipes-ref "$RECIPES_REF" \
             --conda-module "$CONDA_MODULE" \
             --module-base-path "$MODULE_BASE_PATH" \
             --poll-timeout-minutes "$POLL_TIMEOUT_MINUTES" \

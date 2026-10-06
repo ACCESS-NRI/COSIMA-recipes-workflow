@@ -3,7 +3,7 @@
   "defaults": {
     "type": "cosima-all-recipes",
     "repository_url": "https://github.com/COSIMA/cosima-recipes.git",
-    "recipes_ref": "main",
+    "recipes_ref": "6278c5bf45924f756de9c00058eecdea0514d7ad",
     "resource_profile": "XLarge",
     "project": "tm70",
     "queue": "normalbw",
