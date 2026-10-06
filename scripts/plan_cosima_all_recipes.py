@@ -13,6 +13,7 @@ from typing import Any
 SAFE_VALUE = re.compile(r"^[A-Za-z0-9_./:+@=-]+$")
 SAFE_RESOURCE = re.compile(r"^[A-Za-z0-9_./:+-]+$")
 SAFE_WALLTIME = re.compile(r"^\d{2}:\d{2}:\d{2}$")
+PINNED_COMMIT = re.compile(r"^[0-9a-f]{40}$")
 RESOURCE_PROFILES: dict[str, dict[str, Any]] = {
     "medium": {"label": "Medium", "queue": "normalbw", "ncpus": 4, "memory": "18GB"},
     "large": {"label": "Large", "queue": "normalbw", "ncpus": 7, "memory": "32GB"},
@@ -60,7 +61,6 @@ def normalize_profile_name(name: str) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True)
-    parser.add_argument("--recipes-ref", default="")
     parser.add_argument("--conda-module", default="")
     parser.add_argument("--module-base-path", default="")
     parser.add_argument("--poll-timeout-minutes", default="")
@@ -72,7 +72,6 @@ def main() -> None:
     config = load_config(args.config)
     planned = dict(config.get("defaults", {}))
     for key, value in {
-        "recipes_ref": args.recipes_ref,
         "conda_module": args.conda_module,
         "module_base_path": args.module_base_path,
         "poll_timeout_minutes": args.poll_timeout_minutes,
@@ -93,7 +92,8 @@ def main() -> None:
     planned["memory"] = profile["memory"]
 
     require_safe_value("repository_url", planned["repository_url"])
-    require_safe_value("recipes_ref", planned["recipes_ref"])
+    if not PINNED_COMMIT.fullmatch(str(planned.get("recipes_ref", ""))):
+        fail("recipes_ref must be a full lowercase 40-character commit SHA in the checked-in config")
     require_safe_value("project", planned["project"])
     require_safe_value("queue", planned["queue"])
     require_safe_value("walltime", planned["walltime"], SAFE_WALLTIME)

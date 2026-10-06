@@ -13,6 +13,7 @@ from typing import Any
 SAFE_VALUE = re.compile(r"^[A-Za-z0-9_./:+@=-]+$")
 SAFE_RESOURCE = re.compile(r"^[A-Za-z0-9_./:+-]+$")
 SAFE_WALLTIME = re.compile(r"^\d{2}:\d{2}:\d{2}$")
+PINNED_COMMIT = re.compile(r"^[0-9a-f]{40}$")
 
 
 def fail(message: str) -> None:
@@ -64,7 +65,6 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--manifest", required=True)
     parser.add_argument("--notebook-path", required=True)
-    parser.add_argument("--recipes-ref", default="")
     parser.add_argument("--conda-module", default="")
     parser.add_argument("--module-base-path", default="")
     parser.add_argument("--poll-timeout-minutes", default="")
@@ -82,17 +82,18 @@ def main() -> None:
         fail(f"notebook {requested_path!r} is not in the Stage 1 manifest. Known notebooks: {known}")
 
     planned = merge(defaults, matches[0], {
-        "recipes_ref": args.recipes_ref,
         "conda_module": args.conda_module,
         "module_base_path": args.module_base_path,
         "poll_timeout_minutes": args.poll_timeout_minutes,
     })
     planned["path"] = requested_path
     planned["safe_name"] = sanitize_name(requested_path)
+    planned["recipes_ref"] = defaults.get("recipes_ref", "")
 
     # Validate values passed to shell/PBS. This is intentionally conservative.
     require_safe_value("repository_url", planned["repository_url"])
-    require_safe_value("recipes_ref", planned["recipes_ref"])
+    if not PINNED_COMMIT.fullmatch(str(planned["recipes_ref"])):
+        fail("recipes_ref must be a full lowercase 40-character commit SHA in the checked-in manifest")
     require_safe_value("project", planned["project"])
     require_safe_value("queue", planned["queue"])
     require_safe_value("walltime", planned["walltime"], SAFE_WALLTIME)
