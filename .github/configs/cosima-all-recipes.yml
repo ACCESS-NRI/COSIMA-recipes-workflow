@@ -12,7 +12,7 @@ defaults:
     walltime: "02:00:00"
     memory: 8GB
     group: all-recipes
-    storage: "gdata/xp65+gdata/ik11+gdata/cj50+gdata/ol01+gdata/hh5"
+    storage: "gdata/xp65+gdata/ik11+gdata/cj50+gdata/ol01+gdata/hh5+gdata/av17"
 
 recipes:
   - name: 01-cooking-tutorials-01-basics-01-loading-slicing-dicing-output

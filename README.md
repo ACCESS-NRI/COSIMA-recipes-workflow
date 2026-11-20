@@ -118,3 +118,10 @@ memory, jobfs, and walltime used by each imported all-recipes run summary.
 - `GADI_KEY`
 - `GADI_KEY_PASSPHRASE` if the key is encrypted
 - `GADI_SCRIPTS_DIR` unless `gadi_work_dir` is supplied manually
+
+The NCI account configured as `GADI_USER` must be a member of the storage
+projects requested in the workflow configs, including `av17` for the NSIDC
+CDR sea-ice observations under `/g/data/av17`. Adding `gdata/av17` to the PBS
+storage request does not grant project membership. Check membership with
+`id -Gn` on Gadi; if `av17` is missing, request membership through
+[MyNCI](https://my.nci.org.au/mancini/project/av17).
