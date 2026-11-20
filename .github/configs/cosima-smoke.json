@@ -9,7 +9,7 @@
     "walltime": "00:30:00",
     "memory": "4GB",
     "ncpus": 1,
-    "storage": "gdata/xp65+gdata/ik11+gdata/cj50+gdata/ol01+gdata/hh5",
+    "storage": "gdata/xp65+gdata/ik11+gdata/cj50+gdata/ol01+gdata/hh5+gdata/av17",
     "conda_module": "conda/analysis3",
     "module_base_path": "/g/data/xp65/public/modules",
     "poll_interval_seconds": 60,
